@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .parser import parse_teams_config, parse_slots_config
-from .draw import draw_pot1, draw_pot, run_full_draw
-import random
+from .draw import run_full_draw
 
 
 def format_pots(pots: dict, slots_map: dict | None = None) -> str:

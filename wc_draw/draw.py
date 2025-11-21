@@ -231,26 +231,36 @@ def draw_pot(
             return [team.fixed_group] if eligible_for_group(team, working[team.fixed_group]) else []
 
         if team.pot == 4:
-            preferred = [g for g, ts in working.items() if len(ts) == 1 and eligible_for_group(team, ts)]
+            preferred = [
+                g for g, ts in working.items() if len(ts) == 1 and eligible_for_group(team, ts)
+            ]
             if preferred:
                 return preferred
             return [g for g, ts in working.items() if len(ts) < 4 and eligible_for_group(team, ts)]
 
         expected = team.pot - 1
-        eligible = [g for g, ts in working.items() if len(ts) == expected and len(ts) < 4 and eligible_for_group(team, ts)]
+        eligible = [
+            g
+            for g, ts in working.items()
+            if len(ts) == expected and len(ts) < 4 and eligible_for_group(team, ts)
+        ]
         if eligible:
             return eligible
 
         current_max = max(len(ts) for ts in working.values())
         if allow_early or expected > current_max:
-            fallback = [g for g, ts in working.items() if len(ts) < 4 and eligible_for_group(team, ts)]
+            fallback = [
+                g for g, ts in working.items() if len(ts) < 4 and eligible_for_group(team, ts)
+            ]
             if not fallback:
                 return []
             min_size = min(len(working[g]) for g in fallback)
             return [g for g in fallback if len(working[g]) == min_size]
         return []
 
-    def backtrack_assign(teams_left: List[Team], working: Dict[str, List[Team]]) -> Optional[Dict[str, List[Team]]]:
+    def backtrack_assign(
+        teams_left: List[Team], working: Dict[str, List[Team]]
+    ) -> Optional[Dict[str, List[Team]]]:
         if not teams_left:
             return working
         # MRV heuristic: pick team with fewest eligible groups first
@@ -286,7 +296,12 @@ def draw_pot(
     raise RuntimeError(f"Unable to place pot after {max_attempts} attempts")
 
 
-def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_attempts: int = 500, report_fallbacks: bool = False):
+def run_full_draw(
+    pots: Dict[int, List[Team]],
+    seed: Optional[int] = None,
+    max_attempts: int = 500,
+    report_fallbacks: bool = False,
+):
     """Perform the full draw sequence (pot1, pot2, pot3, pot4) and return
     the resulting groups and the integer seed used.
 
@@ -304,6 +319,7 @@ def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_a
     rng = random.Random(seed)
 
     groups = draw_pot1(pots[1], rng=rng)
+
     # Local copy of eligible check used by the global backtracking fallback.
     def eligible_for_group_local(team: Team, grp_teams: List[Team]):
         if any(t.pot == team.pot for t in grp_teams):
@@ -338,6 +354,7 @@ def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_a
         if team.confederation == "UEFA":
             return same < 2
         return same < 1
+
     try:
         # Classic ordering: pot2, pot3, then pot4.
         draw_pot(pots[2], groups, rng=rng, max_attempts=max_attempts, allow_early=False)
@@ -361,8 +378,14 @@ def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_a
                 for p in ordering:
                     # allow_early for later pots to reduce deadlocks
                     allow = True if p >= 3 else False
-                    draw_pot(pots[p], alt_groups, rng=rng, max_attempts=max_attempts, allow_early=allow)
-                metadata['fallback'] = {"type": "alternate_ordering", "ordering": ordering}
+                    draw_pot(
+                        pots[p],
+                        alt_groups,
+                        rng=rng,
+                        max_attempts=max_attempts,
+                        allow_early=allow,
+                    )
+                metadata["fallback"] = {"type": "alternate_ordering", "ordering": ordering}
                 if report_fallbacks:
                     return alt_groups, seed, metadata
                 return alt_groups, seed
@@ -380,8 +403,12 @@ def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_a
             if team.fixed_group:
                 if team.fixed_group not in working:
                     return []
-                return [team.fixed_group] if eligible_for_group_local(team, working[team.fixed_group]) else []
-            return [g for g, ts in working.items() if len(ts) < 4 and eligible_for_group_local(team, ts)]
+                if eligible_for_group_local(team, working[team.fixed_group]):
+                    return [team.fixed_group]
+                return []
+            return [
+                g for g, ts in working.items() if len(ts) < 4 and eligible_for_group_local(team, ts)
+            ]
 
         def backtrack_all(teams_left, working):
             if not teams_left:
@@ -410,7 +437,7 @@ def run_full_draw(pots: Dict[int, List[Team]], seed: Optional[int] = None, max_a
             raise
         for g in groups:
             groups[g] = result[g]
-        metadata['fallback'] = {"type": "global_backtracking"}
+        metadata["fallback"] = {"type": "global_backtracking"}
         if report_fallbacks:
             return groups, seed, metadata
         return groups, seed

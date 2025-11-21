@@ -11,6 +11,7 @@ Each record:
 
 This script is intentionally dependency-free (no tqdm). It uses multiprocessing to speed up runs.
 """
+
 from __future__ import annotations
 import argparse
 import json
@@ -32,9 +33,14 @@ def run_seed_task(args_tuple):
     seed, max_attempts, retry_attempts = args_tuple
     # Each worker constructs its own pots to avoid shared state
     try:
-        pots = parse_teams_config(str(Path('teams.csv').resolve()))
+        pots = parse_teams_config(str(Path("teams.csv").resolve()))
     except Exception as e:
-        return {"seed": seed, "success": False, "error": f"parse_teams_config error: {e}", "used_seed": None}
+        return {
+            "seed": seed,
+            "success": False,
+            "error": f"parse_teams_config error: {e}",
+            "used_seed": None,
+        }
 
     try:
         # Request fallback metadata so we can record if an alternate strategy was used
@@ -48,18 +54,34 @@ def run_seed_task(args_tuple):
 
         # Serialize groups to simple lists of team names for downstream aggregation
         groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
-        return {"seed": seed, "success": True, "error": None, "used_seed": used_seed, "groups": groups_serialized, "fallback": metadata.get("fallback")}
+        return {
+            "seed": seed,
+            "success": True,
+            "error": None,
+            "used_seed": used_seed,
+            "groups": groups_serialized,
+            "fallback": metadata.get("fallback"),
+        }
     except Exception:
         # retry once with a larger budget
         try:
-            maybe = run_full_draw(pots, seed=seed, max_attempts=retry_attempts, report_fallbacks=True)
+            maybe = run_full_draw(
+                pots, seed=seed, max_attempts=retry_attempts, report_fallbacks=True
+            )
             if len(maybe) == 3:
                 groups, used_seed, metadata = maybe
             else:
                 groups, used_seed = maybe
                 metadata = {"fallback": None}
             groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
-            return {"seed": seed, "success": True, "error": None, "used_seed": used_seed, "groups": groups_serialized, "fallback": metadata.get("fallback")}
+            return {
+                "seed": seed,
+                "success": True,
+                "error": None,
+                "used_seed": used_seed,
+                "groups": groups_serialized,
+                "fallback": metadata.get("fallback"),
+            }
         except Exception as e2:
             return {"seed": seed, "success": False, "error": str(e2), "used_seed": None}
 
@@ -80,11 +102,30 @@ def main():
     parser = argparse.ArgumentParser(description="Large seed scan for wc-draw")
     parser.add_argument("--start", type=int, default=0, help="Start seed (inclusive)")
     parser.add_argument("--end", type=int, default=10000, help="End seed (exclusive)")
-    parser.add_argument("--workers", type=int, default=max(1, multiprocessing.cpu_count() - 1), help="Number of worker processes")
-    parser.add_argument("--max-attempts", type=int, default=2000, help="primary max attempts passed to run_full_draw")
-    parser.add_argument("--retry-attempts", type=int, default=10000, help="retry attempts if primary attempt fails")
-    parser.add_argument("--output", type=str, default="seed_scan_large.jsonl", help="Output JSONL path (appendable)")
-    parser.add_argument("--chunk-size", type=int, default=1000, help="How many seeds to queue per batch (for memory control)")
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=max(1, multiprocessing.cpu_count() - 1),
+        help="Number of worker processes",
+    )
+    parser.add_argument(
+        "--max-attempts",
+        type=int,
+        default=2000,
+        help="primary max attempts passed to run_full_draw",
+    )
+    parser.add_argument(
+        "--retry-attempts", type=int, default=10000, help="retry attempts if primary attempt fails"
+    )
+    parser.add_argument(
+        "--output", type=str, default="seed_scan_large.jsonl", help="Output JSONL path (appendable)"
+    )
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=1000,
+        help="How many seeds to queue per batch (for memory control)",
+    )
     args = parser.parse_args()
 
     outpath = Path(args.output)

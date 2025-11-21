@@ -1,5 +1,5 @@
 test:
-	uv run pytest
+	uv run pytest -m "not slow"
 
 lint:
 	uv run ruff check
@@ -16,11 +16,15 @@ draw:
 	# Run the full draw for pots 1..4 (use ARGS to pass --seed or other flags)
 	uv run python -m wc_draw.cli --draw-all $(ARGS)
 
+test-all:
+	uv run pytest
+
 .PHONY: help
 help:
 	@echo "Usage: make <target> [ARGS=\"...\"]"
 	@echo "Available targets:"
-	@echo "  test        - run the test suite (uv run pytest)"
+	@echo "  test        - run unit tests only (excludes slow tests)"
+	@echo "  test-all    - run all tests including slow harness tests"
 	@echo "  lint        - run ruff linting (uv run ruff check)"
 	@echo "  format      - auto-format code with ruff (uv run ruff format)"
 	@echo "  all         - run test, lint, format"

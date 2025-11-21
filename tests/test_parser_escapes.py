@@ -10,7 +10,7 @@ def test_parse_mixed_team_and_slot_escapes(tmp_path: Path):
     content = r"""
 Mixed,UEFA,4,false,,\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F/🇮🇹
 UEFA Playoff X,UEFA,4,false,,\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F/🇮🇹,Wales;Italy
-"""
+"""  # noqa: E501
     csv_path.write_text(content.strip() + "\n", encoding="utf-8")
 
     pots = parse_teams_config(str(csv_path))

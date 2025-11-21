@@ -15,7 +15,14 @@ line-length = 100
 select = ["E", "F", "W"]
 ignore = []
 
+[tool.ruff.lint.per-file-ignores]
+"scripts/*.py" = ["E402", "E501"]  # Allow import-after-sys.path and long lines
+"notebooks/*.ipynb" = ["E402", "E501"]  # Notebooks have different import patterns
+
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with -m 'not slow')",
+]
