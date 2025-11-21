@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Run a large seed scan for the draw and write per-seed results incrementally.
+# ruff: noqa: E501
+"""Run a large seed scan for the draw and write per-seed results.
 
 Usage examples:
   python3 scripts/seed_scan_large.py --start 0 --end 10000 --workers 8 --output seed_scan_large.jsonl
@@ -7,11 +8,11 @@ Usage examples:
 
 The script writes JSON lines (one JSON object per seed) to the output file so it can be monitored while running.
 Each record:
-  {"seed": int, "success": bool, "error": <string or null>, "used_seed": int}
+  {"seed": int, "success": bool, "error": <string or null>, ...}
 
-This script is intentionally dependency-free (no tqdm). It uses multiprocessing to speed up runs.
+This script is intentionally dependency-free (no tqdm).
+It uses multiprocessing to speed up runs.
 """
-
 from __future__ import annotations
 import argparse
 import json
@@ -25,8 +26,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from wc_draw.parser import parse_teams_config
-from wc_draw.draw import run_full_draw
+from wc_draw.parser import parse_teams_config  # noqa: E402
+from wc_draw.draw import run_full_draw  # noqa: E402
 
 
 def run_seed_task(args_tuple):
@@ -35,16 +36,19 @@ def run_seed_task(args_tuple):
     try:
         pots = parse_teams_config(str(Path("teams.csv").resolve()))
     except Exception as e:
+        err_msg = f"parse_teams_config error: {e}"
         return {
             "seed": seed,
             "success": False,
-            "error": f"parse_teams_config error: {e}",
+            "error": err_msg,
             "used_seed": None,
         }
 
     try:
         # Request fallback metadata so we can record if an alternate strategy was used
-        maybe = run_full_draw(pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True)
+        maybe = run_full_draw(
+            pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True
+        )
         # run_full_draw may return (groups, seed) or (groups, seed, metadata)
         if len(maybe) == 3:
             groups, used_seed, metadata = maybe
@@ -53,7 +57,9 @@ def run_seed_task(args_tuple):
             metadata = {"fallback": None}
 
         # Serialize groups to simple lists of team names for downstream aggregation
-        groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
+        groups_serialized = {
+            g: [t.name for t in teams] for g, teams in groups.items()
+        }
         return {
             "seed": seed,
             "success": True,
@@ -73,7 +79,9 @@ def run_seed_task(args_tuple):
             else:
                 groups, used_seed = maybe
                 metadata = {"fallback": None}
-            groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
+            groups_serialized = {
+                g: [t.name for t in teams] for g, teams in groups.items()
+            }
             return {
                 "seed": seed,
                 "success": True,
@@ -83,7 +91,12 @@ def run_seed_task(args_tuple):
                 "fallback": metadata.get("fallback"),
             }
         except Exception as e2:
-            return {"seed": seed, "success": False, "error": str(e2), "used_seed": None}
+            return {
+                "seed": seed,
+                "success": False,
+                "error": str(e2),
+                "used_seed": None,
+            }
 
 
 def write_jsonl_line(path: Path, obj: dict, lock: Optional[multiprocessing.Lock]):
@@ -115,10 +128,16 @@ def main():
         help="primary max attempts passed to run_full_draw",
     )
     parser.add_argument(
-        "--retry-attempts", type=int, default=10000, help="retry attempts if primary attempt fails"
+        "--retry-attempts",
+        type=int,
+        default=10000,
+        help="retry attempts if primary attempt fails",
     )
     parser.add_argument(
-        "--output", type=str, default="seed_scan_large.jsonl", help="Output JSONL path (appendable)"
+        "--output",
+        type=str,
+        default="seed_scan_large.jsonl",
+        help="Output JSONL path (appendable)",
     )
     parser.add_argument(
         "--chunk-size",
