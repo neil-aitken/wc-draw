@@ -1,0 +1,21 @@
+[project]
+name = "wc-draw"
+version = "0.1.0"
+description = "A new Python project managed with uv."
+authors = [
+	{ name = "Neil Aitken", email = "aitken15@gmail.com" }
+]
+requires-python = ">=3.14"
+
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = []
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
