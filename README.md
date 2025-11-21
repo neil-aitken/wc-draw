@@ -69,3 +69,29 @@ A new Python project managed with uv.
 
 - Ensure all checks pass with `make all` before submitting changes.
 - Follow code style enforced by ruff and format code with `make format`.
+
+## CLI
+
+This project includes a small CLI helper to inspect pots and placeholder slots defined in `teams.csv`.
+
+- Run the CLI (defaults to `teams.csv` in the repo):
+  ```bash
+  uv run python -m wc_draw.cli
+  ```
+
+- Show slots (placeholder playoff/inter-confederation paths):
+  ```bash
+  uv run python -m wc_draw.cli --slots
+  ```
+
+- Output machine-readable JSON (useful for tests or automation):
+  ```bash
+  uv run python -m wc_draw.cli --json
+  ```
+
+- Specify a different teams file:
+  ```bash
+  uv run python -m wc_draw.cli --teams path/to/teams.csv
+  ```
+
+The JSON output contains two keys: `pots` (mapping pot numbers to lists of team names) and `slots` (list of slot objects with `name`, `pot`, `allowed_confederations`, `candidates`, and `fixed_group`).
