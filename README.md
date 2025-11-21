@@ -94,4 +94,41 @@ This project includes a small CLI helper to inspect pots and placeholder slots d
   uv run python -m wc_draw.cli --teams path/to/teams.csv
   ```
 
+- Run the pot1 draw and show group assignments (A..L):
+  ```bash
+  uv run python -m wc_draw.cli --draw-pot1
+  ```
+
+- Provide a deterministic RNG seed for reproducible draws:
+  ```bash
+  uv run python -m wc_draw.cli --draw-pot1 --seed 42
+  ```
+
+- If you prefer to run via the Makefile, pass arguments using the `ARGS` variable. Example:
+  ```bash
+  make cli ARGS="--draw-pot1 --seed 42"
+  ```
+
 The JSON output contains two keys: `pots` (mapping pot numbers to lists of team names) and `slots` (list of slot objects with `name`, `pot`, `allowed_confederations`, `candidates`, and `fixed_group`).
+
+## Draw helper (pots 1..3)
+
+The CLI now supports running the draw for pots 1 through 3 together. This will:
+- Run the pot1 draw (hosts are placed into fixed groups first).
+- Place pot2 and pot3 teams while enforcing confederation separation rules (UEFA max 2 per group; non-UEFA max 1).
+
+Examples:
+
+- Run a deterministic draw for pots 1..3 using a seed:
+  ```bash
+  make draw ARGS="--seed 42"
+  ```
+
+- Run the same via the CLI directly:
+  ```bash
+  uv run python -m wc_draw.cli --draw-pots --seed 42
+  ```
+
+Notes:
+- The current `--json` output returns only `pots` and `slots`. If you need machine-readable drawn groups, pass `--draw-pots` and capture the CLI output, or ask to add drawn groups to the JSON output.
+- The `make draw` target currently runs pots 1..3. Pot4 (and a full `--draw-all`) can be added next — I can implement that if you'd like.

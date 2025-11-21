@@ -18,3 +18,5 @@ class Slot:
     allowed_confederations: List[str]
     candidates: Optional[List[str]] = None
     fixed_group: Optional[str] = None
+    # concatenated flag emoji(s) for slot (e.g. combined flags for playoff candidates)
+    flags: Optional[str] = None
