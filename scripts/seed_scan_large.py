@@ -13,6 +13,7 @@ Each record:
 This script is intentionally dependency-free (no tqdm).
 It uses multiprocessing to speed up runs.
 """
+
 from __future__ import annotations
 import argparse
 import json
@@ -46,9 +47,7 @@ def run_seed_task(args_tuple):
 
     try:
         # Request fallback metadata so we can record if an alternate strategy was used
-        maybe = run_full_draw(
-            pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True
-        )
+        maybe = run_full_draw(pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True)
         # run_full_draw may return (groups, seed) or (groups, seed, metadata)
         if len(maybe) == 3:
             groups, used_seed, metadata = maybe
@@ -57,9 +56,7 @@ def run_seed_task(args_tuple):
             metadata = {"fallback": None}
 
         # Serialize groups to simple lists of team names for downstream aggregation
-        groups_serialized = {
-            g: [t.name for t in teams] for g, teams in groups.items()
-        }
+        groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
         return {
             "seed": seed,
             "success": True,
@@ -79,9 +76,7 @@ def run_seed_task(args_tuple):
             else:
                 groups, used_seed = maybe
                 metadata = {"fallback": None}
-            groups_serialized = {
-                g: [t.name for t in teams] for g, teams in groups.items()
-            }
+            groups_serialized = {g: [t.name for t in teams] for g, teams in groups.items()}
             return {
                 "seed": seed,
                 "success": True,

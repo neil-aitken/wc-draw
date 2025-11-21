@@ -59,7 +59,7 @@ def test_run_full_draw_harness_with_several_seeds():
     total_runs = 0
 
     # group_counts[team][group] = count
-    group_counts = {name: {chr(ord("A") + i): 0 for i in range(12)} for name in team_names}
+    group_counts = {name: {chr(ord('A') + i): 0 for i in range(12)} for name in team_names}
     # pair_counts[team][other] = count (other != team)
     pair_counts = {name: {other: 0 for other in team_names if other != name} for name in team_names}
 
