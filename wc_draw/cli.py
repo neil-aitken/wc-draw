@@ -3,7 +3,9 @@ import json
 from pathlib import Path
 from typing import Iterable
 
+from .config import DrawConfig
 from .parser import parse_teams_config, parse_slots_config
+from .pot_assignment import assign_pots
 from .draw import run_full_draw
 
 
@@ -65,13 +67,34 @@ def main(argv=None):
         help="RNG seed for deterministic draws",
     )
     parser.add_argument("--json", action="store_true", help="Output JSON instead of text")
+    parser.add_argument(
+        "--uefa-group-winners-separated",
+        action="store_true",
+        help="Prevent UEFA qualifying group winners from being drawn into the same World Cup group",
+    )
+    parser.add_argument(
+        "--uefa-playoffs-seeded",
+        action="store_true",
+        help="Seed UEFA playoff paths in pots based on highest FIFA ranking of candidates",
+    )
     args = parser.parse_args(argv)
+
+    # Build config from args
+    config = DrawConfig(
+        uefa_group_winners_separated=args.uefa_group_winners_separated,
+        uefa_playoffs_seeded=args.uefa_playoffs_seeded,
+    )
 
     teams_file = args.teams
     if teams_file is None:
         teams_file = Path(__file__).resolve().parents[1] / "teams.csv"
 
     pots = parse_teams_config(str(teams_file))
+
+    # Apply dynamic pot assignment if playoffs are seeded
+    if config.uefa_playoffs_seeded:
+        pots = assign_pots(pots, config)
+
     slots = parse_slots_config(str(teams_file))
     # map slots by name for formatting helpers
     slots_map = {s.name: s for s in slots}
@@ -98,7 +121,7 @@ def main(argv=None):
 
     if args.draw:
         # Delegate draw orchestration (seed creation + pot order) to draw module.
-        groups, used_seed = run_full_draw(pots, seed=args.seed)
+        groups, used_seed = run_full_draw(pots, seed=args.seed, config=config)
         print(f"Seed: {used_seed}")
 
         def fmt_team(t):

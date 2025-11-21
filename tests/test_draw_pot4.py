@@ -1,5 +1,6 @@
 import random
 from pathlib import Path
+from wc_draw.config import DrawConfig
 from wc_draw.parser import parse_teams_config
 from wc_draw.draw import draw_pot1, draw_pot
 
@@ -7,15 +8,16 @@ from wc_draw.draw import draw_pot1, draw_pot
 def test_draw_pot4_inter_paths_avoid_conflicted_groups():
     csv_path = Path(__file__).resolve().parents[1] / "teams.csv"
     pots = parse_teams_config(str(csv_path))
+    config = DrawConfig()  # Default config (all features off)
 
     rng = random.Random(0)
 
     groups = draw_pot1(pots[1], rng=rng)
-    draw_pot(pots[2], groups, rng=rng)
-    draw_pot(pots[3], groups, rng=rng)
+    draw_pot(pots[2], groups, rng=rng, config=config)
+    draw_pot(pots[3], groups, rng=rng, config=config)
 
     # Now place pot4
-    draw_pot(pots[4], groups, rng=rng)
+    draw_pot(pots[4], groups, rng=rng, config=config)
 
     # Find Inter Path slots and ensure their groups do not contain any of the
     # confederations listed in the slot's confederation field.

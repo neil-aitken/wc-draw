@@ -1,5 +1,6 @@
 import random
 from pathlib import Path
+from wc_draw.config import DrawConfig
 from wc_draw.parser import parse_teams_config
 from wc_draw.draw import draw_pot1, draw_pot
 
@@ -24,6 +25,7 @@ def confed_counts_ok(groups):
 def test_draw_pots_2_and_3_respect_confederation_limits():
     csv_path = Path(__file__).resolve().parents[1] / "teams.csv"
     pots = parse_teams_config(str(csv_path))
+    config = DrawConfig()  # Default config (all features off)
 
     rng = random.Random(0)
 
@@ -31,13 +33,13 @@ def test_draw_pots_2_and_3_respect_confederation_limits():
     groups = draw_pot1(pots[1], rng=rng)
 
     # Place pot2
-    draw_pot(pots[2], groups, rng=rng)
+    draw_pot(pots[2], groups, rng=rng, config=config)
     # After pot2 placement, groups should have size 2
     assert all(len(v) == 2 for v in groups.values())
     assert confed_counts_ok(groups)
 
     # Place pot3
-    draw_pot(pots[3], groups, rng=rng)
+    draw_pot(pots[3], groups, rng=rng, config=config)
     # After pot3 placement, groups should have size 3
     assert all(len(v) == 3 for v in groups.values())
     assert confed_counts_ok(groups)

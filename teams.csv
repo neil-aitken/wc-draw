@@ -46,9 +46,9 @@ England,UEFA,1,false,,\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E00
 France,UEFA,1,false,,🇫🇷,,3,true
 Germany,UEFA,1,false,,🇩🇪,,9,true
 Netherlands,UEFA,1,false,,🇳🇱,,7,true
-Norway,UEFA,3,false,,🇳🇴,,29,false
+Norway,UEFA,3,false,,🇳🇴,,29,true
 Portugal,UEFA,1,false,,🇵🇹,,6,true
-Scotland,UEFA,3,false,,\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F,,36,false
+Scotland,UEFA,3,false,,\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F,,36,true
 Spain,UEFA,1,false,,🇪🇸,,1,true
 Switzerland,UEFA,2,false,,🇨🇭,,17,true
 
