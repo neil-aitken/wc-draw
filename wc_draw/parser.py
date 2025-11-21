@@ -38,6 +38,8 @@ class Team:
     host: bool
     fixed_group: Optional[str] = None
     flag: Optional[str] = None
+    fifa_ranking: int = 0  # FIFA world ranking (0 = unranked/unknown)
+    uefa_group_winner: bool = False  # Won a UEFA qualifying group
 
 
 def parse_teams_config(filepath: str) -> dict[int, List[Team]]:
@@ -48,16 +50,49 @@ def parse_teams_config(filepath: str) -> dict[int, List[Team]]:
             if not row or row[0].startswith("#"):
                 continue  # Skip comments and empty lines
 
-            # New CSV schema: name, confederation, pot, host, fixed_group, flag, candidates
-            if len(row) >= 6:
+            # CSV schema: name, confederation, pot, host, fixed_group, flag,
+            #             candidates, fifa_ranking, uefa_group_winner
+            # Note: candidates column is for slots (placeholder teams)
+            # Support backward compatibility with older formats
+            if len(row) >= 9:
+                (
+                    name,
+                    confederation,
+                    pot,
+                    host,
+                    fixed_group,
+                    flag,
+                    _candidates,
+                    fifa_ranking,
+                    uefa_group_winner,
+                ) = row[:9]
+            elif len(row) >= 8:
+                (
+                    name,
+                    confederation,
+                    pot,
+                    host,
+                    fixed_group,
+                    flag,
+                    _candidates,
+                    fifa_ranking,
+                ) = row[:8]
+                uefa_group_winner = "false"
+            elif len(row) >= 6:
                 name, confederation, pot, host, fixed_group, flag = row[:6]
+                fifa_ranking = "0"
+                uefa_group_winner = "false"
             elif len(row) == 5:
                 name, confederation, pot, host, fixed_group = row
                 flag = None
+                fifa_ranking = "0"
+                uefa_group_winner = "false"
             elif len(row) == 4:
                 name, confederation, pot, host = row
                 fixed_group = None
                 flag = None
+                fifa_ranking = "0"
+                uefa_group_winner = "false"
             else:
                 raise ValueError(f"Invalid row format: {row}")
 
@@ -68,6 +103,16 @@ def parse_teams_config(filepath: str) -> dict[int, List[Team]]:
                 host=host.strip().lower() == "true",
                 fixed_group=fixed_group.strip() if fixed_group and fixed_group.strip() else None,
                 flag=flag.strip() if flag and flag.strip() else None,
+                fifa_ranking=(
+                    int(fifa_ranking.strip())
+                    if fifa_ranking and fifa_ranking.strip()
+                    else 0
+                ),
+                uefa_group_winner=(
+                    uefa_group_winner.strip().lower() == "true"
+                    if uefa_group_winner
+                    else False
+                ),
             )
             # If the CSV stores explicit unicode escape sequences (e.g. "\U0001F3F4..."),
             # replace those escapes only (leave literal emoji alone) to avoid

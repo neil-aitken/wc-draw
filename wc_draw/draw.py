@@ -2,9 +2,30 @@ import logging
 import random
 from typing import Dict, List, Optional
 
+from .config import DrawConfig
 from .parser import Team
 
 logger = logging.getLogger(__name__)
+
+
+def _check_uefa_group_winner_constraint(team: Team, grp_teams: List[Team]) -> bool:
+    """
+    Return True if team can be placed without violating UEFA group winner rule.
+
+    Rule: At most one UEFA qualifying group winner per World Cup group.
+
+    If the team being placed is a UEFA group winner, ensure no other
+    UEFA group winner is already in the group.
+    """
+    if not team.uefa_group_winner:
+        return True
+
+    # Check if any existing team is also a UEFA group winner
+    for existing in grp_teams:
+        if existing.uefa_group_winner:
+            return False
+
+    return True
 
 
 def draw_pot1(pot1: List[Team], rng: Optional[random.Random] = None) -> Dict[str, List[Team]]:
@@ -57,9 +78,12 @@ def draw_pot(
     rng: Optional[random.Random] = None,
     max_attempts: int = 500,
     allow_early: bool = False,
+    config: Optional[DrawConfig] = None,
 ) -> Dict[str, List[Team]]:
     if rng is None:
         rng = random.Random()
+    if config is None:
+        config = DrawConfig()
 
     def eligible_for_group(team: Team, grp_teams: List[Team]):
         # Do not allow more than one team from the same pot in a single group.
@@ -67,6 +91,11 @@ def draw_pot(
         # group when placing pots out-of-order or using fallback logic.
         if any(t.pot == team.pot for t in grp_teams):
             return False
+
+        # Check UEFA group winner constraint if enabled
+        if config.uefa_group_winners_separated:
+            if not _check_uefa_group_winner_constraint(team, grp_teams):
+                return False
 
         if "|" in team.confederation:
             allowed = [c.strip() for c in team.confederation.split("|") if c.strip()]
@@ -301,6 +330,7 @@ def run_full_draw(
     seed: Optional[int] = None,
     max_attempts: int = 500,
     report_fallbacks: bool = False,
+    config: Optional[DrawConfig] = None,
 ):
     """Perform the full draw sequence (pot1, pot2, pot3, pot4) and return
     the resulting groups and the integer seed used.
@@ -312,6 +342,9 @@ def run_full_draw(
     The RNG is always initialized from the returned seed so runs are
     reproducible when reusing that value.
     """
+    if config is None:
+        config = DrawConfig()
+
     metadata = {"fallback": None}
 
     if seed is None:
@@ -324,6 +357,12 @@ def run_full_draw(
     def eligible_for_group_local(team: Team, grp_teams: List[Team]):
         if any(t.pot == team.pot for t in grp_teams):
             return False
+
+        # Check UEFA group winner constraint if enabled
+        if config.uefa_group_winners_separated:
+            if not _check_uefa_group_winner_constraint(team, grp_teams):
+                return False
+
         if "|" in team.confederation:
             allowed = [c.strip() for c in team.confederation.split("|") if c.strip()]
             for conf in allowed:
@@ -357,9 +396,15 @@ def run_full_draw(
 
     try:
         # Classic ordering: pot2, pot3, then pot4.
-        draw_pot(pots[2], groups, rng=rng, max_attempts=max_attempts, allow_early=False)
-        draw_pot(pots[3], groups, rng=rng, max_attempts=max_attempts, allow_early=True)
-        draw_pot(pots[4], groups, rng=rng, max_attempts=max_attempts, allow_early=True)
+        draw_pot(
+            pots[2], groups, rng=rng, max_attempts=max_attempts, allow_early=False, config=config
+        )
+        draw_pot(
+            pots[3], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config
+        )
+        draw_pot(
+            pots[4], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config
+        )
         if report_fallbacks:
             return groups, seed, metadata
         return groups, seed
@@ -384,6 +429,7 @@ def run_full_draw(
                         rng=rng,
                         max_attempts=max_attempts,
                         allow_early=allow,
+                        config=config,
                     )
                 metadata["fallback"] = {"type": "alternate_ordering", "ordering": ordering}
                 if report_fallbacks:

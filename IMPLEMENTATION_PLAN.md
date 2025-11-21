@@ -5,7 +5,7 @@ Add two configurable behaviors to the draw simulation:
 1. **UEFA Qualifying Group Winner Constraint**: UEFA qualifying group winners cannot be drawn together in the same World Cup group
 2. **UEFA Playoff Seeding**: Playoff paths may be seeded in higher pots based on FIFA rankings
 
-## Phase 1: Feature Toggle Framework
+## Phase 1: Feature Toggle Framework ✅
 
 ### Task 1.1: Create DrawConfig dataclass
 **File**: `wc_draw/config.py` (new)
@@ -30,9 +30,14 @@ class DrawConfig:
 - Easy to extend with new features
 - Can be serialized for reproducibility
 
+### ✅ Phase 1 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Commit changes before proceeding to Phase 2
+
 ---
 
-## Phase 2: Data Model Updates
+## Phase 2: Data Model Updates ✅
 
 ### Task 2.1: Add FIFA ranking to Team dataclass
 **File**: `wc_draw/parser.py`
@@ -82,9 +87,15 @@ def parse_teams_config(filepath: str) -> dict[int, List[Team]]:
     # Validate: fifa_ranking > 0
 ```
 
+### ✅ Phase 2 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Verify parser loads new CSV correctly
+- Commit changes before proceeding to Phase 3
+
 ---
 
-## Phase 3: Dynamic Pot Assignment
+## Phase 3: Dynamic Pot Assignment ✅
 
 ### Task 3.1: Create pot assignment function
 **File**: `wc_draw/pot_assignment.py` (new)
@@ -124,6 +135,12 @@ def parse_teams_config(filepath: str, config: Optional[DrawConfig] = None) -> di
     If config is provided, ignore pot column and compute pots via assign_pots().
     """
 ```
+
+### ✅ Phase 3 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Test both seeding modes (playoffs seeded vs unseeded)
+- Commit changes before proceeding to Phase 4
 
 ---
 
@@ -179,6 +196,12 @@ def _check_uefa_group_winner_constraint(
     return True
 ```
 
+### ✅ Phase 4 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Test constraint enabled and disabled modes
+- Commit changes before proceeding to Phase 5
+
 ---
 
 ## Phase 5: Draw Function Integration
@@ -215,6 +238,12 @@ def run_full_draw(
         config = DrawConfig()
 ```
 
+### ✅ Phase 5 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Test full draw with all 4 config combinations
+- Commit changes before proceeding to Phase 6
+
 ---
 
 ## Phase 6: CLI Integration
@@ -247,6 +276,12 @@ pots = parse_teams_config(args.teams, config)
 # Run draw with config
 groups, seed = run_full_draw(pots, seed=args.seed, config=config)
 ```
+
+### ✅ Phase 6 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Test CLI with different flag combinations
+- Commit changes before proceeding to Phase 7
 
 ---
 
@@ -293,6 +328,12 @@ def test_uefa_group_winners_constraint_disabled():
 
 - Pass `DrawConfig()` (default) to maintain existing behavior
 - Update integration test to test both modes
+
+### ✅ Phase 7 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass (including new tests)
+- Run `make test-all` → verify slow harness tests pass
+- Commit changes before proceeding to Phase 8
 
 ---
 
@@ -415,6 +456,13 @@ plt.tight_layout()
 plt.savefig("notebooks/output/scotland_group_scenarios_comparison.png")
 ```
 
+### ✅ Phase 8 Complete
+- Run `make lint` → verify all checks pass (including scripts)
+- Run `make test` → verify all tests pass
+- Test scenario scanner with small seed range
+- Verify output formats are correct
+- Commit changes before proceeding to Phase 9
+
 ---
 
 ## Phase 9: Documentation
@@ -436,22 +484,34 @@ For users with existing `teams.csv`:
 - How to identify UEFA group winners
 - Backward compatibility notes
 
+### ✅ Phase 9 Complete
+- Run `make lint` → verify all checks pass
+- Run `make test` → verify all tests pass
+- Review all documentation for accuracy
+- Final commit and tag release
+
 ---
 
 ## Implementation Order (Recommended)
 
-1. **Phase 1**: Feature toggle framework (foundation)
-2. **Phase 2**: Data model updates (enables everything else)
-3. **Phase 3**: Dynamic pot assignment (independent feature)
-4. **Phase 4**: UEFA group winner constraint (independent feature)
+1. **Phase 1**: Feature toggle framework (foundation) ✅
+2. **Phase 2**: Data model updates (enables everything else) ✅
+3. **Phase 3**: Dynamic pot assignment (independent feature) ✅
+4. **Phase 4**: UEFA group winner constraint (independent feature) ⏳
 5. **Phase 5**: Integration into draw functions
 6. **Phase 6**: CLI integration
 7. **Phase 7**: Comprehensive testing
 8. **Phase 8**: Scanner integration
 9. **Phase 9**: Documentation
 
+**Critical Rule**: After completing each phase:
+1. Run `make lint` and ensure all checks pass
+2. Run `make test` and ensure all tests pass
+3. Commit changes with clear message
+4. Only then proceed to the next phase
+
 **Checkpoints**:
-- After Phase 3: Test pot assignment in isolation
+- After Phase 3: Test pot assignment in isolation ✅
 - After Phase 4: Test UEFA constraint in isolation
 - After Phase 5: Full integration tests
 - After Phase 8: Large-scale simulations with different configs
