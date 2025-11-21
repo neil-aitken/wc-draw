@@ -39,7 +39,7 @@ def test_check_uefa_group_winner_constraint_allows_first_winner():
 
 def test_uefa_group_winners_constraint_disabled():
     """When constraint disabled, multiple UEFA group winners can be in same group."""
-    teams = parse_teams_config('teams.csv')
+    teams = parse_teams_config("teams.csv")
     config = DrawConfig(uefa_group_winners_separated=False)
 
     # Run a draw and check that we can complete it
@@ -54,7 +54,7 @@ def test_uefa_group_winners_constraint_disabled():
 
 def test_uefa_group_winners_constraint_enabled():
     """When constraint enabled, only one UEFA group winner per World Cup group."""
-    teams = parse_teams_config('teams.csv')
+    teams = parse_teams_config("teams.csv")
     config = DrawConfig(uefa_group_winners_separated=True)
 
     # Run multiple draws to test the constraint
@@ -77,7 +77,7 @@ def test_uefa_group_winners_constraint_enabled():
 
 def test_uefa_constraint_with_both_configs():
     """Test that draw works with both constraint modes."""
-    teams = parse_teams_config('teams.csv')
+    teams = parse_teams_config("teams.csv")
 
     # Test with constraint off
     config_off = DrawConfig(uefa_group_winners_separated=False)
@@ -96,7 +96,7 @@ def test_uefa_constraint_with_both_configs():
 
 def test_uefa_constraint_counts_winners_correctly():
     """Verify we correctly identify UEFA group winners from teams.csv."""
-    teams = parse_teams_config('teams.csv')
+    teams = parse_teams_config("teams.csv")
 
     all_teams = []
     for pot_teams in teams.values():
@@ -114,15 +114,23 @@ def test_uefa_constraint_counts_winners_correctly():
     # Verify expected teams are marked as winners
     winner_names = {t.name for t in uefa_winners}
     expected_winners = {
-        "Austria", "Belgium", "Croatia", "England", "France",
-        "Germany", "Netherlands", "Portugal", "Spain", "Switzerland"
+        "Austria",
+        "Belgium",
+        "Croatia",
+        "England",
+        "France",
+        "Germany",
+        "Netherlands",
+        "Portugal",
+        "Spain",
+        "Switzerland",
     }
     assert winner_names == expected_winners
 
 
 def test_uefa_constraint_playoff_paths_not_winners():
     """Playoff paths cannot be UEFA group winners."""
-    teams = parse_teams_config('teams.csv')
+    teams = parse_teams_config("teams.csv")
 
     all_teams = []
     for pot_teams in teams.values():

@@ -36,8 +36,8 @@ def assign_pots(teams_by_pot: Dict[int, List[Team]], config: DrawConfig) -> Dict
     non_hosts = [t for t in all_teams if not t.host]
 
     # Handle playoff paths based on configuration
-    playoff_paths = [t for t in non_hosts if t.name.startswith('UEFA Playoff')]
-    non_playoff_teams = [t for t in non_hosts if not t.name.startswith('UEFA Playoff')]
+    playoff_paths = [t for t in non_hosts if t.name.startswith("UEFA Playoff")]
+    non_playoff_teams = [t for t in non_hosts if not t.name.startswith("UEFA Playoff")]
 
     if not config.uefa_playoffs_seeded:
         # Playoff paths forced to Pot 4, sort others by ranking
