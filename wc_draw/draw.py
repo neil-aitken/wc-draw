@@ -76,7 +76,7 @@ def draw_pot(
     pot: List[Team],
     groups: Dict[str, List[Team]],
     rng: Optional[random.Random] = None,
-    max_attempts: int = 500,
+    max_attempts: int = 5000,
     allow_early: bool = False,
     config: Optional[DrawConfig] = None,
 ) -> Dict[str, List[Team]]:
@@ -328,7 +328,7 @@ def draw_pot(
 def run_full_draw(
     pots: Dict[int, List[Team]],
     seed: Optional[int] = None,
-    max_attempts: int = 500,
+    max_attempts: int = 5000,
     report_fallbacks: bool = False,
     config: Optional[DrawConfig] = None,
 ):
