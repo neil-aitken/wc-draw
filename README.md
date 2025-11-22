@@ -1,8 +1,13 @@
 # wc-draw
 
-A new Python project managed with uv.
+World Cup draw simulator with support for multiple rule scenarios and large-scale probability analysis.
 
 ## Features
+- **Full draw simulation** for 2026 World Cup (48 teams, 12 groups)
+- **Scenario analysis** across different rule interpretations
+- **UEFA constraint support** (group winner separation)
+- **Dynamic pot assignment** (playoff seeding by FIFA ranking)
+- **Large-scale seed scanning** for probability analysis
 - Environment management with uv
 - Testing with pytest
 - Linting and formatting with ruff
@@ -70,9 +75,46 @@ A new Python project managed with uv.
 - Ensure all checks pass with `make all` before submitting changes.
 - Follow code style enforced by ruff and format code with `make format`.
 
+## Teams CSV Format
+
+The `teams.csv` file defines all teams and their attributes:
+
+```csv
+name,confederation,pot,host,fixed_group,allowed_confederations,fifa_ranking,uefa_group_winner
+Spain,UEFA,1,false,,,1,true
+England,UEFA,1,false,,,4,true
+...
+UEFA Playoff A,UEFA | CONMEBOL,4,false,,UEFA | CONMEBOL,,false
+```
+
+### Required Fields
+
+- **name**: Team name or playoff path identifier
+- **confederation**: Primary confederation (UEFA, CONMEBOL, CAF, AFC, CONCACAF, OFC)
+- **pot**: Pot number (1-4) based on FIFA rankings
+- **host**: Boolean indicating if team is a host nation
+- **fixed_group**: Group letter (A-L) for host nations, empty otherwise
+- **allowed_confederations**: For playoff paths, pipe-separated list of possible confederations
+- **fifa_ranking**: FIFA ranking number (used for dynamic pot assignment)
+- **uefa_group_winner**: Boolean indicating if team won a UEFA qualifying group
+
+### Playoff Paths
+
+Playoff paths are placeholder teams with uncertain confederation:
+- Use pipe-separated confederations: `UEFA | CONMEBOL`
+- Leave `fifa_ranking` empty unless using playoff seeding feature
+- Set `uefa_group_winner=false` (paths cannot be group winners)
+
+### UEFA Group Winners
+
+Teams marked with `uefa_group_winner=true` are subject to the separation constraint when enabled:
+- At most one UEFA group winner per World Cup group
+- Currently 12 UEFA group winners (one per group)
+- Requires playoff seeding to work (otherwise mathematically impossible)
+
 ## CLI
 
-This project includes a small CLI helper to inspect pots and placeholder slots defined in `teams.csv`.
+This project includes a CLI for running draws and inspecting team data.
 
 - Run the CLI (defaults to `teams.csv` in the repo):
   ```bash
@@ -129,6 +171,93 @@ Examples:
   uv run python -m wc_draw.cli --draw-pots --seed 42
   ```
 
-Notes:
-- The current `--json` output returns only `pots` and `slots`. If you need machine-readable drawn groups, pass `--draw-pots` and capture the CLI output, or ask to add drawn groups to the JSON output.
-- The `make draw` target currently runs pots 1..3. Pot4 (and a full `--draw-all`) can be added next — I can implement that if you'd like.
+### Feature Toggles
+
+The draw simulator supports two optional features that change draw behavior:
+
+#### UEFA Group Winner Separation
+
+Enforces that at most one UEFA qualifying group winner appears in each World Cup group:
+
+```bash
+make draw ARGS="--uefa-group-winners-separated --uefa-playoffs-seeded --seed 42"
+```
+
+**Important**: This constraint requires `--uefa-playoffs-seeded` to work. Using it alone is impossible due to over-constrained pot 4.
+
+#### UEFA Playoff Seeding
+
+Assigns UEFA playoff paths to pots 2-3 based on FIFA rankings instead of keeping them all in pot 4:
+
+```bash
+make draw ARGS="--uefa-playoffs-seeded --seed 42"
+```
+
+This feature:
+- Moves UEFA Playoff A (Italy, rank 12) → Pot 2
+- Moves UEFA Playoff D (Czechia, rank 21) → Pot 2
+- Moves UEFA Playoff B (Ukraine, rank 28) → Pot 3
+- Moves UEFA Playoff C (Slovakia, rank 25) → Pot 3
+- Reduces pot 4 from 8 to 4 teams (0 UEFA teams)
+
+### Combined Features
+
+Both features work together to enable the UEFA constraint:
+
+```bash
+make draw ARGS="--uefa-group-winners-separated --uefa-playoffs-seeded --seed 42"
+```
+
+This combination has a 100% success rate with the default retry limit.
+
+## Scenario Analysis
+
+The project supports analyzing draw probabilities across 3 viable rule scenarios. See [SCENARIO_ANALYSIS.md](SCENARIO_ANALYSIS.md) for detailed instructions.
+
+### Quick Start
+
+1. **Scan all scenarios** (10,000 seeds each):
+   ```bash
+   python3 scripts/seed_scan_scenarios.py --start 0 --end 10000 --workers 8
+   ```
+
+2. **Aggregate statistics**:
+   ```bash
+   python3 scripts/aggregate_scenario_stats.py
+   ```
+
+3. **Analyze in Jupyter**:
+   ```bash
+   jupyter notebook notebooks/scenario_comparison.ipynb
+   ```
+
+### The 3 Viable Scenarios
+
+1. **Baseline**: Standard FIFA rules (both flags off)
+2. **Playoff Seeding**: Dynamic pot assignment only
+3. **Both Features**: Winner separation + playoff seeding
+
+**Note**: The 4th combination (winner separation alone) is impossible and automatically skipped.
+
+### Output Files
+
+- `seed_scan_baseline.jsonl` - Baseline scenario results
+- `seed_scan_playoff_seeding.jsonl` - Playoff seeding scenario results
+- `seed_scan_both_features.jsonl` - Combined features scenario results
+- `scenario_stats.json` - Aggregated statistics for all scenarios
+
+See [SCENARIO_ANALYSIS.md](SCENARIO_ANALYSIS.md) for:
+- Detailed usage instructions
+- Performance tuning tips
+- Large-scale scan guidance (100k+ seeds)
+- Analysis examples and troubleshooting
+
+## Migration Guide
+
+If you have an existing `teams.csv` from an earlier version, see [MIGRATION.md](MIGRATION.md) for upgrade instructions.
+
+## Notes
+
+- The default retry limit is 5,000 attempts (increased from 500 for reliability)
+- The draw algorithm uses multiple fallback strategies (alternate pot ordering, global backtracking)
+- Success rates: Baseline ~100%, Playoff Seeding ~100%, Both Features ~100% (with default retries)
