@@ -97,8 +97,7 @@ def test_uefa_constraint_with_both_configs():
     import pytest
 
     pytest.skip(
-        "Constraint requires uefa_playoffs_seeded - "
-        "see test_uefa_constraint_with_playoff_seeding"
+        "Constraint requires uefa_playoffs_seeded - see test_uefa_constraint_with_playoff_seeding"
     )
 
     teams = parse_teams_config("teams.csv")
@@ -133,10 +132,7 @@ def test_uefa_constraint_with_playoff_seeding():
     teams = parse_teams_config("teams.csv")
 
     # Build config with both flags
-    config = DrawConfig(
-        uefa_group_winners_separated=True,
-        uefa_playoffs_seeded=True
-    )
+    config = DrawConfig(uefa_group_winners_separated=True, uefa_playoffs_seeded=True)
 
     # Apply dynamic pot assignment
     pots = assign_pots(teams, config)
@@ -162,8 +158,7 @@ def test_uefa_constraint_with_playoff_seeding():
 
         # Verify all 12 winners are placed (one per group)
         all_winner_count = sum(
-            1 for group_teams in groups.values()
-            for t in group_teams if t.uefa_group_winner
+            1 for group_teams in groups.values() for t in group_teams if t.uefa_group_winner
         )
         assert all_winner_count == 12, f"Expected 12 UEFA winners placed, got {all_winner_count}"
 
