@@ -10,34 +10,34 @@ def normalize_location(venue_line):
     """Extract and normalize city name from venue line."""
     # City remapping to broader recognized names
     city_map = {
-        'east rutherford': 'new-york',
-        'santa clara': 'san-francisco',
-        'inglewood': 'los-angeles',
-        'zapopan': 'guadalajara',
-        'guadalupe': 'monterrey',
-        'foxborough': 'boston',
-        'miami gardens': 'miami',
-        'arlington': 'dallas',
+        "east rutherford": "new-york",
+        "santa clara": "san-francisco",
+        "inglewood": "los-angeles",
+        "zapopan": "guadalajara",
+        "guadalupe": "monterrey",
+        "foxborough": "boston",
+        "miami gardens": "miami",
+        "arlington": "dallas",
     }
 
     # Common patterns: "Stadium Name, City" or "Stadium Name, City Name"
-    match = re.search(r',\s*(.+)$', venue_line)
+    match = re.search(r",\s*(.+)$", venue_line)
     if match:
         city = match.group(1).strip().lower()
         # Apply remapping if available
         city_normalized = city_map.get(city, city)
         # Convert spaces to hyphens
-        return city_normalized.replace(' ', '-')
+        return city_normalized.replace(" ", "-")
     return None
 
 
 def parse_group_locations(filepath):
     """Parse group-stage-details file and return venue counts per group."""
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         content = f.read()
 
     # Split by groups
-    group_pattern = r'Group ([A-L])\n.*?(?=Group [A-L]|\Z)'
+    group_pattern = r"Group ([A-L])\n.*?(?=Group [A-L]|\Z)"
 
     group_locations = {}
 
@@ -46,7 +46,7 @@ def parse_group_locations(filepath):
         group_text = match.group(0)
 
         # Find all venue lines (lines containing stadium names and cities)
-        venue_lines = re.findall(r'^[A-Z].*?,\s*[A-Z].*$', group_text, re.MULTILINE)
+        venue_lines = re.findall(r"^[A-Z].*?,\s*[A-Z].*$", group_text, re.MULTILINE)
 
         # Count locations
         location_counts = defaultdict(int)

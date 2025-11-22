@@ -16,23 +16,23 @@ from collections import defaultdict
 
 
 CITY_MAP = {
-    'east rutherford': 'new-york',
-    'santa clara': 'san-francisco',
-    'inglewood': 'los-angeles',
-    'zapopan': 'guadalajara',
-    'guadalupe': 'monterrey',
-    'foxborough': 'boston',
-    'miami gardens': 'miami',
-    'arlington': 'dallas',
+    "east rutherford": "new-york",
+    "santa clara": "san-francisco",
+    "inglewood": "los-angeles",
+    "zapopan": "guadalajara",
+    "guadalupe": "monterrey",
+    "foxborough": "boston",
+    "miami gardens": "miami",
+    "arlington": "dallas",
 }
 
 
 def normalize_city(venue_line):
     """Extract city from venue line and normalize to broad recognition."""
-    match = re.search(r',\s*(.+)$', venue_line)
+    match = re.search(r",\s*(.+)$", venue_line)
     if match:
         city = match.group(1).strip().lower()
-        return CITY_MAP.get(city, city).replace(' ', '-')
+        return CITY_MAP.get(city, city).replace(" ", "-")
     return None
 
 
@@ -45,21 +45,21 @@ def parse_group_matches(filepath="group-stage-details"):
       - One of matches 3-4 (50% each)
       - One of matches 5-6 (50% each)
     """
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         content = f.read()
 
     group_matches = {}
 
     # Find each group section
-    for match in re.finditer(r'Group ([A-L])\n(.*?)(?=Group [A-L]|\Z)', content, re.DOTALL):
+    for match in re.finditer(r"Group ([A-L])\n(.*?)(?=Group [A-L]|\Z)", content, re.DOTALL):
         group_letter = match.group(1)
         group_text = match.group(2)
 
         # Check if it's a host group
-        is_host = '(H) Hosts' in group_text or ' (H)' in group_text
+        is_host = "(H) Hosts" in group_text or " (H)" in group_text
 
         # Extract all match lines (team pairs and venues)
-        lines = group_text.split('\n')
+        lines = group_text.split("\n")
         matches = []
 
         i = 0
@@ -67,9 +67,9 @@ def parse_group_matches(filepath="group-stage-details"):
             line = lines[i].strip()
 
             # Look for match definitions - can be "Team1\tMatch X\tTeam2" or just "Match X\t"
-            if 'Match' in line:
+            if "Match" in line:
                 # Extract match number
-                match_num_match = re.search(r'Match (\d+)', line)
+                match_num_match = re.search(r"Match (\d+)", line)
                 if match_num_match:
                     match_num = int(match_num_match.group(1))
 
@@ -80,37 +80,36 @@ def parse_group_matches(filepath="group-stage-details"):
 
                         if city:
                             # Extract team labels if present
-                            parts = [p.strip() for p in line.split('\t') if p.strip()]
-                            team1 = parts[0] if len(parts) > 0 and 'Match' not in parts[0] else ''
-                            team2 = parts[2] if len(parts) > 2 else ''
+                            parts = [p.strip() for p in line.split("\t") if p.strip()]
+                            team1 = parts[0] if len(parts) > 0 and "Match" not in parts[0] else ""
+                            team2 = parts[2] if len(parts) > 2 else ""
 
-                            matches.append({
-                                'match_num': match_num,
-                                'team1': team1,
-                                'team2': team2,
-                                'city': city,
-                                'pot3_probability': 0.0  # Will be set below
-                            })
+                            matches.append(
+                                {
+                                    "match_num": match_num,
+                                    "team1": team1,
+                                    "team2": team2,
+                                    "city": city,
+                                    "pot3_probability": 0.0,  # Will be set below
+                                }
+                            )
             i += 1
 
         # Determine pot 3 probabilities
         if is_host:
             # Host groups: explicit pot labels, 100% probability
             for m in matches:
-                if f'{group_letter}3' in m['team1'] or f'{group_letter}3' in m['team2']:
-                    m['pot3_probability'] = 1.0
+                if f"{group_letter}3" in m["team1"] or f"{group_letter}3" in m["team2"]:
+                    m["pot3_probability"] = 1.0
         elif len(matches) == 6:
             # Non-host groups: pot 3 plays one match from each pair (50% each)
             # Pairs: (0,1), (2,3), (4,5)
             for pair_start in [0, 2, 4]:
-                matches[pair_start]['pot3_probability'] = 0.5
-                matches[pair_start + 1]['pot3_probability'] = 0.5
+                matches[pair_start]["pot3_probability"] = 0.5
+                matches[pair_start + 1]["pot3_probability"] = 0.5
 
         # Store all matches with their pot 3 probabilities
-        group_matches[f'group-{group_letter.lower()}'] = {
-            'is_host': is_host,
-            'matches': matches
-        }
+        group_matches[f"group-{group_letter.lower()}"] = {"is_host": is_host, "matches": matches}
 
     return group_matches
 
@@ -140,9 +139,9 @@ def calculate_city_probabilities_refined(scotland_groups, group_matches):
                 city_match_probs = defaultdict(list)
 
                 # Collect probabilities for each match in each city
-                for match in group_data['matches']:
-                    if match['pot3_probability'] > 0:
-                        city_match_probs[match['city']].append(match['pot3_probability'])
+                for match in group_data["matches"]:
+                    if match["pot3_probability"] > 0:
+                        city_match_probs[match["city"]].append(match["pot3_probability"])
 
                 # Calculate probability of visiting each city
                 for city, match_probs in city_match_probs.items():
@@ -150,7 +149,7 @@ def calculate_city_probabilities_refined(scotland_groups, group_matches):
                     # P(avoid city) = product of (1 - p) for each match
                     prob_avoid = 1.0
                     for p in match_probs:
-                        prob_avoid *= (1.0 - p)
+                        prob_avoid *= 1.0 - p
 
                     prob_visit = 1.0 - prob_avoid
 
@@ -164,7 +163,7 @@ def calculate_city_probabilities_refined(scotland_groups, group_matches):
 
 def load_scenario_stats(filepath="scenario_stats.json"):
     """Load Scotland's group distribution from scenario stats."""
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         stats = json.load(f)
 
     scotland_groups = {}
@@ -185,7 +184,7 @@ def format_output(scenario_city_probs):
     scenario_names = {
         "baseline": "Baseline (Standard FIFA Rules)",
         "playoff_seeding": "Playoff Seeding Only",
-        "both_features": "Both Features (Winner Separation + Playoff Seeding)"
+        "both_features": "Both Features (Winner Separation + Playoff Seeding)",
     }
 
     for scenario in sorted(scenario_city_probs.keys()):

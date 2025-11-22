@@ -8,20 +8,20 @@ from collections import defaultdict
 
 # City mapping from parse_group_locations.py
 CITY_MAP = {
-    'east rutherford': 'new-york',
-    'santa clara': 'san-francisco',
-    'inglewood': 'los-angeles',
-    'zapopan': 'guadalajara',
-    'guadalupe': 'monterrey',
-    'foxborough': 'boston',
-    'miami gardens': 'miami',
-    'arlington': 'dallas',
+    "east rutherford": "new-york",
+    "santa clara": "san-francisco",
+    "inglewood": "los-angeles",
+    "zapopan": "guadalajara",
+    "guadalupe": "monterrey",
+    "foxborough": "boston",
+    "miami gardens": "miami",
+    "arlington": "dallas",
 }
 
 
 def load_scenario_stats(filepath="scenario_stats.json"):
     """Load Scotland's group distribution from scenario stats."""
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         stats = json.load(f)
 
     scotland_groups = {}
@@ -40,16 +40,16 @@ def load_group_locations(filepath="group_locations.txt"):
     group_locations = {}
     current_group = None
 
-    with open(filepath, 'r') as f:
+    with open(filepath, "r") as f:
         for line in f:
             line = line.strip()
             if not line:
                 continue
 
-            if line.startswith('group-'):
-                current_group = line.rstrip(':')
-            elif current_group and ':' in line:
-                city, count = line.split(':', 1)
+            if line.startswith("group-"):
+                current_group = line.rstrip(":")
+            elif current_group and ":" in line:
+                city, count = line.split(":", 1)
                 city = city.strip()
                 count = int(count.strip())
 
@@ -92,7 +92,7 @@ def format_output(scenario_city_probs):
     scenario_names = {
         "baseline": "Baseline (Standard FIFA Rules)",
         "playoff_seeding": "Playoff Seeding Only",
-        "both_features": "Both Features (Winner Separation + Playoff Seeding)"
+        "both_features": "Both Features (Winner Separation + Playoff Seeding)",
     }
 
     for scenario in sorted(scenario_city_probs.keys()):
