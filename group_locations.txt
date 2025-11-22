@@ -1,0 +1,74 @@
+group-a:
+  guadalajara: 2
+  mexico-city: 2
+  atlanta: 1
+  monterrey: 1
+
+group-b:
+  vancouver: 2
+  los-angeles: 1
+  san-francisco: 1
+  seattle: 1
+  toronto: 1
+
+group-c:
+  boston: 2
+  atlanta: 1
+  miami: 1
+  new-york: 1
+  philadelphia: 1
+
+group-d:
+  los-angeles: 2
+  san-francisco: 2
+  seattle: 1
+  vancouver: 1
+
+group-e:
+  philadelphia: 2
+  houston: 1
+  kansas-city: 1
+  new-york: 1
+  toronto: 1
+
+group-f:
+  dallas: 2
+  monterrey: 2
+  houston: 1
+  kansas-city: 1
+
+group-g:
+  los-angeles: 2
+  seattle: 2
+  vancouver: 2
+
+group-h:
+  atlanta: 2
+  miami: 2
+  guadalajara: 1
+  houston: 1
+
+group-i:
+  boston: 2
+  new-york: 2
+  philadelphia: 1
+  toronto: 1
+
+group-j:
+  dallas: 2
+  kansas-city: 2
+  san-francisco: 2
+
+group-k:
+  houston: 2
+  atlanta: 1
+  guadalajara: 1
+  mexico-city: 1
+  miami: 1
+
+group-l:
+  toronto: 2
+  boston: 1
+  dallas: 1
+  new-york: 1
+  philadelphia: 1

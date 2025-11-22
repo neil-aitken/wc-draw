@@ -1,0 +1,59 @@
+======================================================================
+Baseline (Standard FIFA Rules)
+======================================================================
+  san-francisco       :  7.38%
+  vancouver           :  7.30%
+  los-angeles         :  7.23%
+  toronto             :  7.00%
+  philadelphia        :  6.88%
+  atlanta             :  6.80%
+  dallas              :  6.77%
+  new-york            :  6.72%
+  houston             :  6.65%
+  boston              :  6.60%
+  seattle             :  5.72%
+  guadalajara         :  5.64%
+  kansas-city         :  5.57%
+  miami               :  5.29%
+  mexico-city         :  4.29%
+  monterrey           :  4.15%
+
+======================================================================
+Both Features (Winner Separation + Playoff Seeding)
+======================================================================
+  los-angeles         : 12.34%
+  vancouver           : 12.33%
+  san-francisco       : 12.31%
+  seattle             :  8.70%
+  guadalajara         :  8.24%
+  mexico-city         :  7.63%
+  toronto             :  6.24%
+  atlanta             :  6.02%
+  monterrey           :  4.76%
+  dallas              :  3.33%
+  boston              :  3.25%
+  new-york            :  3.23%
+  houston             :  3.22%
+  philadelphia        :  3.21%
+  kansas-city         :  2.65%
+  miami               :  2.54%
+
+======================================================================
+Playoff Seeding Only
+======================================================================
+  san-francisco       :  7.82%
+  los-angeles         :  7.68%
+  vancouver           :  7.62%
+  atlanta             :  6.93%
+  toronto             :  6.78%
+  dallas              :  6.40%
+  philadelphia        :  6.35%
+  houston             :  6.32%
+  boston              :  6.31%
+  new-york            :  6.31%
+  guadalajara         :  6.14%
+  seattle             :  5.90%
+  miami               :  5.13%
+  kansas-city         :  5.11%
+  mexico-city         :  4.83%
+  monterrey           :  4.38%

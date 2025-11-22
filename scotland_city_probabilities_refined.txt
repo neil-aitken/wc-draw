@@ -1,0 +1,59 @@
+======================================================================
+Baseline (Standard FIFA Rules)
+======================================================================
+  san-francisco       : 24.77%
+  vancouver           : 24.44%
+  seattle             : 24.44%
+  philadelphia        : 18.45%
+  new-york            : 18.21%
+  houston             : 18.07%
+  guadalajara         : 16.91%
+  dallas              : 16.23%
+  boston              : 15.84%
+  monterrey           : 15.02%
+  kansas-city         : 14.61%
+  toronto             : 14.28%
+  miami               : 13.85%
+  atlanta             : 13.85%
+  los-angeles         :  5.95%
+  mexico-city         :  3.79%
+
+======================================================================
+Both Features (Winner Separation + Playoff Seeding)
+======================================================================
+  vancouver           : 46.86%
+  seattle             : 46.86%
+  san-francisco       : 46.77%
+  guadalajara         : 24.73%
+  monterrey           : 23.77%
+  new-york            :  8.71%
+  philadelphia        :  8.69%
+  houston             :  8.66%
+  dallas              :  8.00%
+  boston              :  7.80%
+  kansas-city         :  6.91%
+  toronto             :  6.81%
+  miami               :  6.71%
+  atlanta             :  6.71%
+  los-angeles         :  3.19%
+  mexico-city         :  2.02%
+
+======================================================================
+Playoff Seeding Only
+======================================================================
+  san-francisco       : 26.72%
+  vancouver           : 26.39%
+  seattle             : 26.39%
+  guadalajara         : 18.41%
+  houston             : 17.14%
+  philadelphia        : 17.12%
+  new-york            : 17.07%
+  monterrey           : 16.61%
+  dallas              : 15.34%
+  boston              : 15.16%
+  miami               : 13.43%
+  atlanta             : 13.43%
+  kansas-city         : 13.42%
+  toronto             : 13.26%
+  los-angeles         :  5.39%
+  mexico-city         :  3.67%
