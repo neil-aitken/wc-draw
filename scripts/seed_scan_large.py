@@ -29,15 +29,26 @@ if str(ROOT) not in sys.path:
 
 from wc_draw.parser import parse_teams_config  # noqa: E402
 from wc_draw.draw import run_full_draw  # noqa: E402
+from wc_draw.config import DrawConfig  # noqa: E402
+from wc_draw.pot_assignment import assign_pots  # noqa: E402
 
 
 def run_seed_task(args_tuple):
-    seed, max_attempts, retry_attempts = args_tuple
+    seed, max_attempts, retry_attempts, uefa_winners_separated, uefa_playoffs_seeded = args_tuple
     # Each worker constructs its own pots to avoid shared state
     try:
-        pots = parse_teams_config(str(Path("teams.csv").resolve()))
+        teams = parse_teams_config(str(Path("teams.csv").resolve()))
+        config = DrawConfig(
+            uefa_group_winners_separated=uefa_winners_separated,
+            uefa_playoffs_seeded=uefa_playoffs_seeded,
+        )
+        # Apply dynamic pot assignment if playoff seeding is enabled
+        if uefa_playoffs_seeded:
+            pots = assign_pots(teams, config)
+        else:
+            pots = teams
     except Exception as e:
-        err_msg = f"parse_teams_config error: {e}"
+        err_msg = f"parse_teams_config/assign_pots error: {e}"
         return {
             "seed": seed,
             "success": False,
@@ -47,7 +58,9 @@ def run_seed_task(args_tuple):
 
     try:
         # Request fallback metadata so we can record if an alternate strategy was used
-        maybe = run_full_draw(pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True)
+        maybe = run_full_draw(
+            pots, seed=seed, max_attempts=max_attempts, report_fallbacks=True, config=config
+        )
         # run_full_draw may return (groups, seed) or (groups, seed, metadata)
         if len(maybe) == 3:
             groups, used_seed, metadata = maybe
@@ -69,7 +82,7 @@ def run_seed_task(args_tuple):
         # retry once with a larger budget
         try:
             maybe = run_full_draw(
-                pots, seed=seed, max_attempts=retry_attempts, report_fallbacks=True
+                pots, seed=seed, max_attempts=retry_attempts, report_fallbacks=True, config=config
             )
             if len(maybe) == 3:
                 groups, used_seed, metadata = maybe
@@ -140,12 +153,30 @@ def main():
         default=1000,
         help="How many seeds to queue per batch (for memory control)",
     )
+    parser.add_argument(
+        "--uefa-group-winners-separated",
+        action="store_true",
+        help="Enable UEFA group winner separation constraint (requires --uefa-playoffs-seeded)",
+    )
+    parser.add_argument(
+        "--uefa-playoffs-seeded",
+        action="store_true",
+        help="Enable UEFA playoff seeding (dynamic pot assignment)",
+    )
     args = parser.parse_args()
 
     outpath = Path(args.output)
     # If file exists, do not overwrite; append. But include a header record for metadata.
     if not outpath.exists():
-        header = {"meta": {"start": args.start, "end": args.end, "workers": args.workers}}
+        header = {
+            "meta": {
+                "start": args.start,
+                "end": args.end,
+                "workers": args.workers,
+                "uefa_group_winners_separated": args.uefa_group_winners_separated,
+                "uefa_playoffs_seeded": args.uefa_playoffs_seeded,
+            }
+        }
         outpath.parent.mkdir(parents=True, exist_ok=True)
         outpath.write_text(json.dumps(header) + "\n")
 
@@ -158,7 +189,16 @@ def main():
     pool = multiprocessing.Pool(processes=args.workers)
     try:
         # Prepare iterable of tasks
-        tasks = ((s, args.max_attempts, args.retry_attempts) for s in seeds)
+        tasks = (
+            (
+                s,
+                args.max_attempts,
+                args.retry_attempts,
+                args.uefa_group_winners_separated,
+                args.uefa_playoffs_seeded,
+            )
+            for s in seeds
+        )
         # imap_unordered yields results as workers finish
         it = pool.imap_unordered(run_seed_task, tasks, chunksize=args.chunk_size)
         done = 0
