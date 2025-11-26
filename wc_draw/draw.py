@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 from .config import DrawConfig
 from .parser import Team
 from .top4_separation import Top4BracketTracker
+from .group_positions import get_position_for_pot
 
 logger = logging.getLogger(__name__)
 
@@ -468,6 +469,10 @@ def run_full_draw(
         draw_pot(
             pots[4], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config
         )
+
+        # Apply FIFA's official position mapping after all pots are drawn
+        groups = apply_fifa_position_mapping(groups)
+
         if report_fallbacks:
             return groups, seed, metadata
         return groups, seed
@@ -495,6 +500,10 @@ def run_full_draw(
                         config=config,
                     )
                 metadata["fallback"] = {"type": "alternate_ordering", "ordering": ordering}
+
+                # Apply FIFA's official position mapping after all pots are drawn
+                alt_groups = apply_fifa_position_mapping(alt_groups)
+
                 if report_fallbacks:
                     return alt_groups, seed, metadata
                 return alt_groups, seed
@@ -547,6 +556,51 @@ def run_full_draw(
         for g in groups:
             groups[g] = result[g]
         metadata["fallback"] = {"type": "global_backtracking"}
+
+        # Apply FIFA's official position mapping after all pots are drawn
+        groups = apply_fifa_position_mapping(groups)
+
         if report_fallbacks:
             return groups, seed, metadata
         return groups, seed
+
+
+def apply_fifa_position_mapping(groups: Dict[str, List[Team]]) -> Dict[str, List[Team]]:
+    """
+    Reorder teams within each group according to FIFA's position mapping.
+
+    After teams are drawn by pot (pot 1, pot 2, pot 3, pot 4), they need to be
+    reordered within each group according to FIFA's official position assignments.
+
+    For example, in Group A:
+    - Position 1 (A1): Pot 1 team (Mexico)
+    - Position 2 (A2): Pot 3 team (not Pot 2!)
+    - Position 3 (A3): Pot 2 team
+    - Position 4 (A4): Pot 4 team
+
+    Args:
+        groups: Dictionary mapping group labels to lists of teams (in pot order)
+
+    Returns:
+        Dictionary mapping group labels to lists of teams (in position order)
+    """
+    reordered_groups = {}
+
+    for group, teams in groups.items():
+        if len(teams) != 4:
+            # Group not complete yet, return as-is
+            reordered_groups[group] = teams
+            continue
+
+        # Create a list of 4 positions
+        positioned_teams = [None] * 4
+
+        # Place each team in the correct position based on their pot
+        for team in teams:
+            position = get_position_for_pot(group, team.pot)
+            positioned_teams[position - 1] = team  # position is 1-indexed
+
+        reordered_groups[group] = positioned_teams
+
+    return reordered_groups
+

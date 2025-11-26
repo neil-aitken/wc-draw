@@ -12,7 +12,8 @@ Output format:
     "teams": {...}
   },
   "playoff_seeding": {...},
-  "both_features": {...}
+  "both_features": {...},
+  "fifa_official": {...}
 }
 
 Usage:
@@ -113,6 +114,12 @@ def main():
         help="Path to both features JSONL",
     )
     parser.add_argument(
+        "--fifa-official",
+        type=str,
+        default="seed_scan_fifa_official.jsonl",
+        help="Path to FIFA official constraints JSONL",
+    )
+    parser.add_argument(
         "--output",
         type=str,
         default="scenario_stats.json",
@@ -124,6 +131,7 @@ def main():
         "baseline": Path(args.baseline),
         "playoff_seeding": Path(args.playoff_seeding),
         "both_features": Path(args.both_features),
+        "fifa_official": Path(args.fifa_official),
     }
 
     print("Aggregating scenario statistics...")

@@ -34,13 +34,14 @@ from wc_draw.pot_assignment import assign_pots  # noqa: E402
 
 
 def run_seed_task(args_tuple):
-    seed, max_attempts, retry_attempts, uefa_winners_separated, uefa_playoffs_seeded = args_tuple
+    seed, max_attempts, retry_attempts, uefa_winners_separated, uefa_playoffs_seeded, fifa_official = args_tuple
     # Each worker constructs its own pots to avoid shared state
     try:
         teams = parse_teams_config(str(Path("teams.csv").resolve()))
         config = DrawConfig(
             uefa_group_winners_separated=uefa_winners_separated,
             uefa_playoffs_seeded=uefa_playoffs_seeded,
+            fifa_official_constraints=fifa_official,
         )
         # Apply dynamic pot assignment if playoff seeding is enabled
         if uefa_playoffs_seeded:
@@ -163,6 +164,11 @@ def main():
         action="store_true",
         help="Enable UEFA playoff seeding (dynamic pot assignment)",
     )
+    parser.add_argument(
+        "--fifa-official-constraints",
+        action="store_true",
+        help="Enable FIFA official constraints (top 4 bracket separation)",
+    )
     args = parser.parse_args()
 
     outpath = Path(args.output)
@@ -175,6 +181,7 @@ def main():
                 "workers": args.workers,
                 "uefa_group_winners_separated": args.uefa_group_winners_separated,
                 "uefa_playoffs_seeded": args.uefa_playoffs_seeded,
+                "fifa_official_constraints": args.fifa_official_constraints,
             }
         }
         outpath.parent.mkdir(parents=True, exist_ok=True)
@@ -196,6 +203,7 @@ def main():
                 args.retry_attempts,
                 args.uefa_group_winners_separated,
                 args.uefa_playoffs_seeded,
+                args.fifa_official_constraints,
             )
             for s in seeds
         )
