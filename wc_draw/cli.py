@@ -77,12 +77,18 @@ def main(argv=None):
         action="store_true",
         help="Seed UEFA playoff paths in pots based on highest FIFA ranking of candidates",
     )
+    parser.add_argument(
+        "--fifa-official-constraints",
+        action="store_true",
+        help="Apply official FIFA draw procedure constraints (baseline + additional rules)",
+    )
     args = parser.parse_args(argv)
 
     # Build config from args
     config = DrawConfig(
         uefa_group_winners_separated=args.uefa_group_winners_separated,
         uefa_playoffs_seeded=args.uefa_playoffs_seeded,
+        fifa_official_constraints=args.fifa_official_constraints,
     )
 
     teams_file = args.teams

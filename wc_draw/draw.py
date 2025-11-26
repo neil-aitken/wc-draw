@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 
 from .config import DrawConfig
 from .parser import Team
+from .top4_separation import Top4BracketTracker
 
 logger = logging.getLogger(__name__)
 
@@ -28,16 +29,22 @@ def _check_uefa_group_winner_constraint(team: Team, grp_teams: List[Team]) -> bo
     return True
 
 
-def draw_pot1(pot1: List[Team], rng: Optional[random.Random] = None) -> Dict[str, List[Team]]:
+def draw_pot1(
+    pot1: List[Team], rng: Optional[random.Random] = None, config: Optional[DrawConfig] = None
+) -> Dict[str, List[Team]]:
     """Allocate teams from pot1 into 12 groups labeled A..L.
 
     Hosts (team.host==True with fixed_group set) are placed into their fixed groups.
     Remaining pot1 teams are drawn randomly into remaining empty pot1 slots.
 
+    If config.fifa_official_constraints is True, applies top 4 bracket separation.
+
     Returns mapping group_label -> list of Team (pot1 only).
     """
     if rng is None:
         rng = random.Random()
+    if config is None:
+        config = DrawConfig()
 
     groups = {chr(ord("A") + i): [] for i in range(12)}
 
@@ -55,7 +62,11 @@ def draw_pot1(pot1: List[Team], rng: Optional[random.Random] = None) -> Dict[str
             groups[grp].append(team)
             remaining.remove(team)
 
-    # Fill remaining empty pot1 slots
+    # If FIFA official constraints enabled, use top 4 bracket separation
+    if config.fifa_official_constraints:
+        return _draw_pot1_with_top4_separation(pot1, groups, remaining, rng, config)
+
+    # Original logic: Fill remaining empty pot1 slots randomly
     empty_groups = [g for g, v in groups.items() if not v]
 
     while remaining:
@@ -68,6 +79,58 @@ def draw_pot1(pot1: List[Team], rng: Optional[random.Random] = None) -> Dict[str
         groups[grp].append(team)
         remaining.remove(team)
         empty_groups.remove(grp)
+
+    return groups
+
+
+def _draw_pot1_with_top4_separation(
+    pot1: List[Team],
+    groups: Dict[str, List[Team]],
+    remaining: List[Team],
+    rng: random.Random,
+    config: DrawConfig,
+) -> Dict[str, List[Team]]:
+    """
+    Draw Pot 1 with top 4 bracket separation constraints (Option B).
+
+    This implements FIFA's official approach where:
+    1. Top 2 (Spain, Argentina) must be in opposite halves
+    2. Seeds 3-4 (France, England) must be in opposite halves
+    3. All top 4 must be in different quadrants
+    4. Non-top-4 teams cannot fill a quadrant before a top-4 team is placed there
+    """
+    tracker = Top4BracketTracker(pot1)
+
+    # Register already-placed hosts
+    for group, teams in groups.items():
+        if teams:
+            tracker.place_team(teams[0], group)
+
+    # Draw remaining teams in random order
+    while remaining:
+        team = rng.choice(remaining)
+
+        # Get available groups for this team
+        available_groups = tracker.get_available_groups_for_team(team)
+
+        if not available_groups:
+            raise RuntimeError(
+                f"No available groups for {team.name}. "
+                "This should not happen with seeds 3-4 separation constraint."
+            )
+
+        # Randomly select from available groups
+        group = rng.choice(available_groups)
+
+        # Place team
+        groups[group].append(team)
+        tracker.place_team(team, group)
+        remaining.remove(team)
+
+    # Validate final placement
+    is_valid, errors = tracker.validate_final_placement()
+    if not is_valid:
+        raise RuntimeError(f"Validation failed: {'; '.join(errors)}")
 
     return groups
 
@@ -351,7 +414,7 @@ def run_full_draw(
         seed = random.SystemRandom().randint(0, 2**32 - 1)
     rng = random.Random(seed)
 
-    groups = draw_pot1(pots[1], rng=rng)
+    groups = draw_pot1(pots[1], rng=rng, config=config)
 
     # Local copy of eligible check used by the global backtracking fallback.
     def eligible_for_group_local(team: Team, grp_teams: List[Team]):
@@ -419,7 +482,7 @@ def run_full_draw(
         ]
         for ordering in alternate_orderings:
             try:
-                alt_groups = draw_pot1(pots[1], rng=rng)
+                alt_groups = draw_pot1(pots[1], rng=rng, config=config)
                 for p in ordering:
                     # allow_early for later pots to reduce deadlocks
                     allow = True if p >= 3 else False
