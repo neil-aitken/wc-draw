@@ -165,7 +165,7 @@ async def capture_team_views(base_url: str = "http://localhost:8080"):
 
             try:
                 # Navigate to page
-                await page.goto(f"{base_url}/city_team_viewer.html")
+                await page.goto(f"{base_url}/team_analysis_viewer.html")
 
                 # Wait for page to load
                 await page.wait_for_load_state("networkidle")

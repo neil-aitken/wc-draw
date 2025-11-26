@@ -203,6 +203,7 @@
         let drawStats = {};
         let teamPots = {};
         let teamCityData = {};
+        let teamCandidates = {}; // Store playoff candidates
         let charts = [];
         
         // Load the data
@@ -220,7 +221,7 @@
                 const csvResponse = await fetch('teams.csv?v=' + Date.now());
                 const csvText = await csvResponse.text();
                 
-                // Parse CSV for pot information
+                // Parse CSV for pot information and candidates
                 csvText.split('\n').forEach(line => {
                     if (line.startsWith('#') || !line.trim()) return;
                     const parts = line.split(',');
@@ -228,6 +229,12 @@
                         const teamName = parts[0].trim();
                         const pot = parseInt(parts[2].trim());
                         teamPots[teamName] = pot;
+                        
+                        // Parse candidates (column 6, semicolon-separated)
+                        if (parts.length >= 7 && parts[6].trim()) {
+                            const candidates = parts[6].trim().split(';').map(c => c.trim());
+                            teamCandidates[teamName] = candidates;
+                        }
                     }
                 });
 
@@ -240,7 +247,14 @@
                     const option = document.createElement('option');
                     option.value = team;
                     const pot = teamPots[team] || '?';
-                    option.textContent = `${team} (Pot ${pot})`;
+                    
+                    // Add candidates to dropdown label if available
+                    let label = `${team} (Pot ${pot})`;
+                    if (teamCandidates[team]) {
+                        label = `${team} (${teamCandidates[team].join('/')})`;
+                    }
+                    
+                    option.textContent = label;
                     teamSelect.appendChild(option);
                 });
 
@@ -261,7 +275,14 @@
         function updateCharts(teamName) {
             // Show team info
             document.getElementById('teamInfo').style.display = 'block';
-            document.getElementById('teamName').textContent = teamName;
+            
+            // Display team name with candidates if available
+            let displayName = teamName;
+            if (teamCandidates[teamName]) {
+                displayName = `${teamName} (${teamCandidates[teamName].join('/')})`;
+            }
+            document.getElementById('teamName').textContent = displayName;
+            
             const teamPot = teamPots[teamName];
             document.getElementById('teamPot').textContent = `Pot ${teamPot}`;
 
@@ -390,6 +411,14 @@
         function createOpponentChart(ctx, opponents, pot) {
             const teams = opponents.map(o => o.team);
             const probabilities = opponents.map(o => o.prob);
+            
+            // Create labels with candidates for playoff teams
+            const labels = teams.map(team => {
+                if (teamCandidates[team]) {
+                    return `${team} (${teamCandidates[team].join('/')})`;
+                }
+                return team;
+            });
 
             // Color scheme by pot
             const potColors = {
@@ -404,7 +433,7 @@
             return new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: teams,
+                    labels: labels,
                     datasets: [{
                         label: 'Probability (%)',
                         data: probabilities,
