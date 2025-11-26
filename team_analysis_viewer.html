@@ -125,11 +125,31 @@
             border-radius: 10px;
             margin-bottom: 20px;
         }
+        
+        .team-info-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 5px;
+        }
+        
+        .team-flags {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .team-flags img {
+            width: 48px;
+            height: 36px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
 
         .team-info h2 {
             font-size: 2em;
             color: #2d3748;
-            margin-bottom: 5px;
+            margin: 0;
         }
 
         .team-info .pot-label {
@@ -190,7 +210,10 @@
         </div>
 
         <div id="teamInfo" class="team-info" style="display: none;">
-            <h2 id="teamName"></h2>
+            <div class="team-info-header">
+                <div class="team-flags" id="teamFlags"></div>
+                <h2 id="teamName"></h2>
+            </div>
             <div class="pot-label" id="teamPot"></div>
         </div>
 
@@ -204,7 +227,25 @@
         let teamPots = {};
         let teamCityData = {};
         let teamCandidates = {}; // Store playoff candidates
+        let teamFlags = {}; // Store team flags
+        let flagCodeMap = {}; // Map team name to ISO country code
         let charts = [];
+        
+        // Mapping for country codes to flagcdn codes
+        const countryCodeMap = {
+            '🇦🇺': 'au', '🇮🇷': 'ir', '🇯🇵': 'jp', '🇯🇴': 'jo', '🇶🇦': 'qa', '🇸🇦': 'sa', '🇰🇷': 'kr', '🇺🇿': 'uz',
+            '🇩🇿': 'dz', '🇨🇻': 'cv', '🇪🇬': 'eg', '🇬🇭': 'gh', '🇨🇮': 'ci', '🇲🇦': 'ma', '🇸🇳': 'sn', '🇿🇦': 'za', '🇹🇳': 'tn',
+            '🇨🇦': 'ca', '🇨🇼': 'cw', '🇭🇹': 'ht', '🇲🇽': 'mx', '🇵🇦': 'pa', '🇺🇸': 'us',
+            '🇦🇷': 'ar', '🇧🇷': 'br', '🇨🇴': 'co', '🇪🇨': 'ec', '🇵🇾': 'py', '🇺🇾': 'uy',
+            '🇳🇿': 'nz',
+            '🇦🇹': 'at', '🇧🇪': 'be', '🇭🇷': 'hr', 'EN': 'gb-eng', '🇫🇷': 'fr', '🇩🇪': 'de', '🇳🇱': 'nl', '🇳🇴': 'no', '🇵🇹': 'pt', 'SC': 'gb-sct', '🇪🇸': 'es', '🇨🇭': 'ch',
+            'WL/BA/IT/NI': ['gb-wls', 'ba', 'it', 'gb-nir'], 
+            'UA/SE/PL/AL': ['ua', 'se', 'pl', 'al'], 
+            'SK/XK/TR/RO': ['sk', 'xk', 'tr', 'ro'], 
+            'CZ/IE/DK/MK': ['cz', 'ie', 'dk', 'mk'],
+            'CD/NC/JM': ['cd', 'nc', 'jm'], 
+            'IQ/BO/SR': ['iq', 'bo', 'sr']
+        };
         
         // Load the data
         async function loadData() {
@@ -221,7 +262,7 @@
                 const csvResponse = await fetch('teams.csv?v=' + Date.now());
                 const csvText = await csvResponse.text();
                 
-                // Parse CSV for pot information and candidates
+                // Parse CSV for pot information, candidates, and flags
                 csvText.split('\n').forEach(line => {
                     if (line.startsWith('#') || !line.trim()) return;
                     const parts = line.split(',');
@@ -229,6 +270,16 @@
                         const teamName = parts[0].trim();
                         const pot = parseInt(parts[2].trim());
                         teamPots[teamName] = pot;
+                        
+                        // Load flags
+                        if (parts.length >= 6) {
+                            const flag = parts[5].trim();
+                            teamFlags[teamName] = flag;
+                            
+                            // Convert flag to country code for flagcdn
+                            const countryCode = countryCodeMap[flag] || flag.toLowerCase();
+                            flagCodeMap[teamName] = countryCode;
+                        }
                         
                         // Parse candidates (column 6, semicolon-separated)
                         if (parts.length >= 7 && parts[6].trim()) {
@@ -282,6 +333,28 @@
                 displayName = `${teamName} (${teamCandidates[teamName].join('/')})`;
             }
             document.getElementById('teamName').textContent = displayName;
+            
+            // Display flags
+            const flagsContainer = document.getElementById('teamFlags');
+            flagsContainer.innerHTML = '';
+            const code = flagCodeMap[teamName];
+            if (code) {
+                if (Array.isArray(code)) {
+                    // Multiple flags for playoff paths
+                    code.forEach(c => {
+                        const img = document.createElement('img');
+                        img.src = `https://flagcdn.com/48x36/${c}.png`;
+                        img.alt = c;
+                        flagsContainer.appendChild(img);
+                    });
+                } else {
+                    // Single flag
+                    const img = document.createElement('img');
+                    img.src = `https://flagcdn.com/48x36/${code}.png`;
+                    img.alt = code;
+                    flagsContainer.appendChild(img);
+                }
+            }
             
             const teamPot = teamPots[teamName];
             document.getElementById('teamPot').textContent = `Pot ${teamPot}`;
@@ -412,13 +485,55 @@
             const teams = opponents.map(o => o.team);
             const probabilities = opponents.map(o => o.prob);
             
-            // Create labels with candidates for playoff teams
-            const labels = teams.map(team => {
-                if (teamCandidates[team]) {
-                    return `${team} (${teamCandidates[team].join('/')})`;
+            // Create empty labels - we'll only show flags
+            const labels = teams.map(() => '');
+
+            // Preload flag images
+            const flagImages = {};
+            teams.forEach(team => {
+                const code = flagCodeMap[team];
+                if (code) {
+                    if (Array.isArray(code)) {
+                        // Multiple flags for playoff paths
+                        flagImages[team] = code.map(c => {
+                            const img = new Image();
+                            img.src = `https://flagcdn.com/24x18/${c}.png`;
+                            return img;
+                        });
+                    } else {
+                        // Single flag
+                        const img = new Image();
+                        img.src = `https://flagcdn.com/24x18/${code}.png`;
+                        flagImages[team] = [img];
+                    }
                 }
-                return team;
             });
+            
+            // Plugin to draw flag images
+            const flagImagePlugin = {
+                id: 'flagImages',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const yAxis = chart.scales.y;
+                    
+                    teams.forEach((team, index) => {
+                        const imgs = flagImages[team];
+                        if (imgs && imgs.length > 0) {
+                            const y = yAxis.getPixelForValue(index);
+                            const totalWidth = imgs.length * 26 - 2;
+                            let xOffset = chart.chartArea.left - totalWidth - 5;
+                            
+                            // Draw all flags for this team
+                            imgs.forEach((img) => {
+                                if (img.complete) {
+                                    ctx.drawImage(img, xOffset, y - 9, 24, 18);
+                                    xOffset += 26;
+                                }
+                            });
+                        }
+                    });
+                }
+            };
 
             // Color scheme by pot
             const potColors = {
@@ -432,6 +547,7 @@
 
             return new Chart(ctx, {
                 type: 'bar',
+                plugins: [flagImagePlugin],
                 data: {
                     labels: labels,
                     datasets: [{
@@ -447,12 +563,24 @@
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 120
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
                         },
                         tooltip: {
                             callbacks: {
+                                title: function(context) {
+                                    const team = teams[context[0].dataIndex];
+                                    if (teamCandidates[team]) {
+                                        return `${team} (${teamCandidates[team].join('/')})`;
+                                    }
+                                    return team;
+                                },
                                 label: function(context) {
                                     return `Probability: ${context.parsed.x.toFixed(2)}%`;
                                 }
