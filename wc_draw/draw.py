@@ -603,4 +603,3 @@ def apply_fifa_position_mapping(groups: Dict[str, List[Team]]) -> Dict[str, List
         reordered_groups[group] = positioned_teams
 
     return reordered_groups
-

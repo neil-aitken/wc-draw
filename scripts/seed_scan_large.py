@@ -34,7 +34,14 @@ from wc_draw.pot_assignment import assign_pots  # noqa: E402
 
 
 def run_seed_task(args_tuple):
-    seed, max_attempts, retry_attempts, uefa_winners_separated, uefa_playoffs_seeded, fifa_official = args_tuple
+    (
+        seed,
+        max_attempts,
+        retry_attempts,
+        uefa_winners_separated,
+        uefa_playoffs_seeded,
+        fifa_official,
+    ) = args_tuple
     # Each worker constructs its own pots to avoid shared state
     try:
         teams = parse_teams_config(str(Path("teams.csv").resolve()))
