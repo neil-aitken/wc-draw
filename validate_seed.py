@@ -41,9 +41,7 @@ def find_seed_in_jsonl(seed: int, jsonl_path: str) -> Dict:
     return None
 
 
-def validate_draw(
-    groups: Dict[str, List[str]], confeds: Dict[str, str]
-) -> Tuple[bool, List[str]]:
+def validate_draw(groups: Dict[str, List[str]], confeds: Dict[str, str]) -> Tuple[bool, List[str]]:
     """
     Validate FIFA draw constraints for a set of groups.
 
@@ -71,27 +69,19 @@ def validate_draw(
         # Check UEFA constraints (min 1, max 2 per group)
         uefa_count = confed_counts.get("UEFA", 0)
         if uefa_count == 0:
-            violations.append(
-                f"Group {group_name}: {uefa_count} UEFA teams (min 1 required)"
-            )
+            violations.append(f"Group {group_name}: {uefa_count} UEFA teams (min 1 required)")
         if uefa_count > 2:
-            violations.append(
-                f"Group {group_name}: {uefa_count} UEFA teams (max 2 allowed)"
-            )
+            violations.append(f"Group {group_name}: {uefa_count} UEFA teams (max 2 allowed)")
 
         # Check other confederations max 1 per group
         for confed, count in confed_counts.items():
             if confed != "UEFA" and count > 1:
-                violations.append(
-                    f"Group {group_name}: {count} {confed} teams (max 1 allowed)"
-                )
+                violations.append(f"Group {group_name}: {count} {confed} teams (max 1 allowed)")
 
     return len(violations) == 0, violations
 
 
-def display_draw(
-    groups: Dict[str, List[str]], confeds: Dict[str, str], verbose: bool = False
-):
+def display_draw(groups: Dict[str, List[str]], confeds: Dict[str, str], verbose: bool = False):
     """Display the draw groups with confederations."""
     print("\nDraw Groups:")
     print("=" * 70)

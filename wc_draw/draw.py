@@ -57,8 +57,7 @@ def _check_min_uefa_constraint(
 
     # Check if group already has a UEFA team
     has_uefa = any(
-        t.confederation.startswith("UEFA") or "|" in (t.confederation or "")
-        for t in grp_teams
+        t.confederation.startswith("UEFA") or "|" in (t.confederation or "") for t in grp_teams
     )
     if has_uefa:
         return True  # Group already satisfied
@@ -278,9 +277,7 @@ def draw_pot(
 
         for team in teams:
             # Calculate remaining UEFA teams in current pot (for min UEFA constraint)
-            remaining_uefa = sum(
-                1 for t in teams_left if t.confederation.startswith("UEFA")
-            )
+            remaining_uefa = sum(1 for t in teams_left if t.confederation.startswith("UEFA"))
 
             # If team has a fixed_group, try to place there if eligible
             if team.fixed_group:
@@ -345,8 +342,7 @@ def draw_pot(
                     fallback = [
                         g
                         for g, ts in working.items()
-                        if len(ts) < 4
-                        and eligible_for_group(team, ts, remaining_uefa)
+                        if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
                     ]
                     if not fallback:
                         failed = True

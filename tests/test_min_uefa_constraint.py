@@ -56,16 +56,26 @@ def test_all_groups_have_min_uefa():
 
     # Pot 1: 8 UEFA, 4 non-UEFA
     uefa_pot1 = [
-        "Spain", "England", "France", "Germany",
-        "Netherlands", "Portugal", "Belgium", "Switzerland"
+        "Spain",
+        "England",
+        "France",
+        "Germany",
+        "Netherlands",
+        "Portugal",
+        "Belgium",
+        "Switzerland",
     ]
     other_pot1 = ["Mexico", "Brazil", "Argentina", "United States"]
 
     for name in uefa_pot1:
         teams.append(Team(name, "UEFA", 1, False, None))
     for name in other_pot1:
-        conf = {"Mexico": "CONCACAF", "Brazil": "CONMEBOL",
-                "Argentina": "CONMEBOL", "United States": "CONCACAF"}
+        conf = {
+            "Mexico": "CONCACAF",
+            "Brazil": "CONMEBOL",
+            "Argentina": "CONMEBOL",
+            "United States": "CONCACAF",
+        }
         teams.append(Team(name, conf[name], 1, False, None))
 
     # Pot 2-4: Add remaining UEFA and non-UEFA teams
