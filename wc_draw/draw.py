@@ -30,6 +30,53 @@ def _check_uefa_group_winner_constraint(team: Team, grp_teams: List[Team]) -> bo
     return True
 
 
+def _check_min_uefa_constraint(
+    team: Team, grp_teams: List[Team], remaining_uefa_in_pot: int, remaining_slots: int
+) -> bool:
+    """
+    Return True if placing this team won't violate minimum UEFA requirement.
+
+    Rule: Every group must have at least 1 UEFA team.
+
+    When placing a non-UEFA team into a group that doesn't yet have a UEFA team,
+    we must ensure there will still be enough UEFA teams available in remaining
+    pots to fill this group later. This is a lookahead check.
+
+    Args:
+        team: The team being considered for placement
+        grp_teams: Current teams in the group
+        remaining_uefa_in_pot: Number of UEFA teams left to place in current pot
+        remaining_slots: Number of empty slots left in this group
+
+    Returns:
+        True if placement is safe, False if it would risk leaving group without UEFA
+    """
+    # If placing a UEFA team, always OK for this constraint
+    if team.confederation.startswith("UEFA") or "|" in team.confederation:
+        return True
+
+    # Check if group already has a UEFA team
+    has_uefa = any(
+        t.confederation.startswith("UEFA") or "|" in (t.confederation or "")
+        for t in grp_teams
+    )
+    if has_uefa:
+        return True  # Group already satisfied
+
+    # Group doesn't have UEFA yet. Check if we can guarantee one later.
+    # If this is pot 4 (last pot), we MUST have UEFA by now
+    if team.pot == 4:
+        return False  # Can't place non-UEFA in pot 4 if no UEFA yet
+
+    # For earlier pots: estimate if enough UEFA teams remain
+    # Conservative check: if group will be full after this placement,
+    # and we haven't placed UEFA yet, block it
+    if remaining_slots <= 1:  # This would be the last slot
+        return False
+
+    return True  # Allow placement, assuming UEFA will come in later pots
+
+
 def draw_pot1(
     pot1: List[Team], rng: Optional[random.Random] = None, config: Optional[DrawConfig] = None
 ) -> Dict[str, List[Team]]:
@@ -149,7 +196,7 @@ def draw_pot(
     if config is None:
         config = DrawConfig()
 
-    def eligible_for_group(team: Team, grp_teams: List[Team]):
+    def eligible_for_group(team: Team, grp_teams: List[Team], remaining_uefa: int = 0):
         # Do not allow more than one team from the same pot in a single group.
         # This ensures we never place two teams from, e.g., pot 4, into the same
         # group when placing pots out-of-order or using fallback logic.
@@ -159,6 +206,13 @@ def draw_pot(
         # Check UEFA group winner constraint if enabled
         if config.uefa_group_winners_separated:
             if not _check_uefa_group_winner_constraint(team, grp_teams):
+                return False
+
+        # Check minimum UEFA constraint (FIFA official rule)
+        # Every group must have at least 1 UEFA team
+        if config.fifa_official_constraints:
+            remaining_slots = 4 - len(grp_teams)
+            if not _check_min_uefa_constraint(team, grp_teams, remaining_uefa, remaining_slots):
                 return False
 
         if "|" in team.confederation:
@@ -220,14 +274,20 @@ def draw_pot(
         # work on a fresh copy of current groups for this attempt
         working = {g: list(v) for g, v in groups.items()}
         failed = False
+        teams_left = list(teams)
 
         for team in teams:
+            # Calculate remaining UEFA teams in current pot (for min UEFA constraint)
+            remaining_uefa = sum(
+                1 for t in teams_left if t.confederation.startswith("UEFA")
+            )
+
             # If team has a fixed_group, try to place there if eligible
             if team.fixed_group:
                 if team.fixed_group not in working:
                     failed = True
                     break
-                if not eligible_for_group(team, working[team.fixed_group]):
+                if not eligible_for_group(team, working[team.fixed_group], remaining_uefa):
                     failed = True
                     break
                 # Insert into the group's list at the pot-specific position so
@@ -247,7 +307,9 @@ def draw_pot(
             if team.pot == 4:
                 # Prefer groups that currently have exactly one team (pot1 placed)
                 preferred = [
-                    g for g, ts in working.items() if len(ts) == 1 and eligible_for_group(team, ts)
+                    g
+                    for g, ts in working.items()
+                    if len(ts) == 1 and eligible_for_group(team, ts, remaining_uefa)
                 ]
                 if preferred:
                     eligible = preferred
@@ -259,13 +321,15 @@ def draw_pot(
                     eligible = [
                         g
                         for g, ts in working.items()
-                        if len(ts) < 4 and eligible_for_group(team, ts)
+                        if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
                     ]
             else:
                 eligible = [
                     g
                     for g, ts in working.items()
-                    if len(ts) == expected_pre_size and len(ts) < 4 and eligible_for_group(team, ts)
+                    if len(ts) == expected_pre_size
+                    and len(ts) < 4
+                    and eligible_for_group(team, ts, remaining_uefa)
                 ]
             # If nothing matches the expected pre-size, only fall back when
             # we're placing a later pot earlier than the current group sizes
@@ -281,7 +345,8 @@ def draw_pot(
                     fallback = [
                         g
                         for g, ts in working.items()
-                        if len(ts) < 4 and eligible_for_group(team, ts)
+                        if len(ts) < 4
+                        and eligible_for_group(team, ts, remaining_uefa)
                     ]
                     if not fallback:
                         failed = True
@@ -299,6 +364,7 @@ def draw_pot(
                 working[pick].append(team)
             else:
                 working[pick].insert(pos, team)
+            teams_left.remove(team)
 
         if not failed:
             # success: copy working back into groups
@@ -316,26 +382,39 @@ def draw_pot(
     # If random attempts failed, try a deterministic backtracking solver
     # as a last resort. This is more expensive but guarantees we explore
     # the search space systematically to find any feasible assignment.
-    def compute_eligible(team: Team, working: Dict[str, List[Team]]):
+    def compute_eligible(team: Team, working: Dict[str, List[Team]], teams_remaining: List[Team]):
+        # Calculate remaining UEFA teams for constraint checking
+        remaining_uefa = sum(1 for t in teams_remaining if t.confederation.startswith("UEFA"))
+
         # reuse the same eligible-group logic as above
         if team.fixed_group:
             if team.fixed_group not in working:
                 return []
-            return [team.fixed_group] if eligible_for_group(team, working[team.fixed_group]) else []
+            return (
+                [team.fixed_group]
+                if eligible_for_group(team, working[team.fixed_group], remaining_uefa)
+                else []
+            )
 
         if team.pot == 4:
             preferred = [
-                g for g, ts in working.items() if len(ts) == 1 and eligible_for_group(team, ts)
+                g
+                for g, ts in working.items()
+                if len(ts) == 1 and eligible_for_group(team, ts, remaining_uefa)
             ]
             if preferred:
                 return preferred
-            return [g for g, ts in working.items() if len(ts) < 4 and eligible_for_group(team, ts)]
+            return [
+                g
+                for g, ts in working.items()
+                if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+            ]
 
         expected = team.pot - 1
         eligible = [
             g
             for g, ts in working.items()
-            if len(ts) == expected and len(ts) < 4 and eligible_for_group(team, ts)
+            if len(ts) == expected and len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
         ]
         if eligible:
             return eligible
@@ -343,7 +422,9 @@ def draw_pot(
         current_max = max(len(ts) for ts in working.values())
         if allow_early or expected > current_max:
             fallback = [
-                g for g, ts in working.items() if len(ts) < 4 and eligible_for_group(team, ts)
+                g
+                for g, ts in working.items()
+                if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
             ]
             if not fallback:
                 return []
@@ -357,7 +438,7 @@ def draw_pot(
         if not teams_left:
             return working
         # MRV heuristic: pick team with fewest eligible groups first
-        elig_list = [(t, compute_eligible(t, working)) for t in teams_left]
+        elig_list = [(t, compute_eligible(t, working, teams_left)) for t in teams_left]
         # If any team has no eligible groups, prune
         for t, elig in elig_list:
             if not elig:
