@@ -1,21 +1,21 @@
 {
   "Algeria": {
     "san-francisco": 23.15,
-    "vancouver": 23.14,
+    "atlanta": 22.78,
     "new-york": 18.7,
     "philadelphia": 18.68,
     "houston": 18.67,
     "boston": 16.6,
-    "guadalajara": 16.59,
     "dallas": 16.56,
-    "seattle": 14.77,
-    "los-angeles": 14.72,
+    "los-angeles": 14.77,
+    "vancouver": 14.72,
+    "seattle": 14.72,
     "kansas-city": 14.59,
     "toronto": 14.54,
     "miami": 14.53,
-    "atlanta": 14.53,
     "monterrey": 14.34,
-    "mexico-city": 4.2
+    "mexico-city": 12.45,
+    "guadalajara": 8.34
   },
   "Argentina": {
     "houston": 24.16,
@@ -54,22 +54,22 @@
     "mexico-city": 4.33
   },
   "Austria": {
-    "atlanta": 22.31,
+    "vancouver": 20.9,
     "san-francisco": 20.67,
     "houston": 19.82,
     "new-york": 19.53,
     "philadelphia": 19.5,
     "dallas": 17.55,
     "boston": 17.34,
+    "guadalajara": 15.84,
     "miami": 15.3,
+    "atlanta": 15.3,
     "toronto": 15.29,
     "kansas-city": 15.21,
-    "los-angeles": 13.86,
-    "vancouver": 13.71,
-    "seattle": 13.71,
+    "seattle": 13.86,
+    "los-angeles": 13.71,
     "monterrey": 13.7,
-    "mexico-city": 11.43,
-    "guadalajara": 8.83
+    "mexico-city": 4.43
   },
   "Belgium": {
     "philadelphia": 26.73,
@@ -112,12 +112,13 @@
     "vancouver": 100.0
   },
   "Cape Verde": {
-    "san-francisco": 28.21,
+    "los-angeles": 28.27,
+    "toronto": 24.45,
     "atlanta": 24.3,
-    "vancouver": 17.11,
+    "guadalajara": 18.77,
     "seattle": 17.11,
-    "monterrey": 16.99,
-    "los-angeles": 16.61,
+    "vancouver": 16.61,
+    "san-francisco": 16.55,
     "philadelphia": 16.5,
     "houston": 16.47,
     "new-york": 16.47,
@@ -125,9 +126,8 @@
     "boston": 14.6,
     "dallas": 14.55,
     "miami": 12.83,
-    "toronto": 12.8,
     "kansas-city": 12.78,
-    "guadalajara": 7.3
+    "monterrey": 5.52
   },
   "Colombia": {
     "san-francisco": 26.79,
@@ -148,22 +148,22 @@
     "mexico-city": 3.69
   },
   "Croatia": {
-    "toronto": 22.71,
+    "san-francisco": 21.07,
+    "vancouver": 20.95,
     "philadelphia": 19.68,
     "new-york": 19.67,
     "houston": 19.38,
     "dallas": 17.49,
     "boston": 17.45,
     "guadalajara": 15.85,
+    "toronto": 15.45,
     "kansas-city": 15.28,
     "miami": 15.16,
     "atlanta": 15.16,
-    "vancouver": 13.85,
-    "los-angeles": 13.7,
+    "los-angeles": 13.85,
     "seattle": 13.7,
-    "mexico-city": 11.44,
-    "san-francisco": 6.71,
-    "monterrey": 6.3
+    "monterrey": 13.48,
+    "mexico-city": 4.27
   },
   "Curacao": {
     "new-york": 25.11,
@@ -184,40 +184,40 @@
     "mexico-city": 5.6
   },
   "Ecuador": {
+    "vancouver": 26.7,
     "san-francisco": 26.63,
-    "atlanta": 23.87,
+    "guadalajara": 18.17,
     "houston": 17.25,
     "philadelphia": 17.17,
     "new-york": 17.12,
     "monterrey": 16.34,
-    "vancouver": 16.29,
-    "seattle": 16.29,
-    "los-angeles": 16.06,
+    "los-angeles": 16.29,
+    "seattle": 16.06,
     "dallas": 15.18,
     "boston": 15.11,
-    "mexico-city": 14.29,
     "toronto": 13.36,
     "kansas-city": 13.33,
     "miami": 13.32,
-    "guadalajara": 7.62
+    "atlanta": 13.32,
+    "mexico-city": 3.75
   },
   "Egypt": {
     "san-francisco": 23.05,
-    "vancouver": 23.0,
+    "atlanta": 22.97,
     "houston": 18.66,
     "philadelphia": 18.66,
     "new-york": 18.66,
-    "guadalajara": 16.82,
     "dallas": 16.73,
     "boston": 16.54,
-    "los-angeles": 14.75,
+    "vancouver": 14.75,
+    "seattle": 14.75,
     "toronto": 14.7,
     "monterrey": 14.66,
     "kansas-city": 14.51,
     "miami": 14.48,
-    "atlanta": 14.48,
-    "seattle": 14.45,
-    "mexico-city": 4.13
+    "los-angeles": 14.45,
+    "mexico-city": 12.61,
+    "guadalajara": 8.34
   },
   "England": {
     "houston": 23.89,
@@ -274,11 +274,12 @@
     "mexico-city": 5.01
   },
   "Ghana": {
-    "san-francisco": 28.42,
+    "los-angeles": 28.33,
     "atlanta": 24.24,
-    "los-angeles": 17.03,
-    "monterrey": 16.92,
-    "vancouver": 16.7,
+    "toronto": 23.96,
+    "guadalajara": 18.73,
+    "san-francisco": 17.12,
+    "vancouver": 17.03,
     "seattle": 16.7,
     "houston": 16.51,
     "philadelphia": 16.41,
@@ -288,8 +289,7 @@
     "boston": 14.56,
     "kansas-city": 12.84,
     "miami": 12.84,
-    "toronto": 12.66,
-    "guadalajara": 7.32
+    "monterrey": 5.52
   },
   "Haiti": {
     "houston": 24.87,
@@ -400,11 +400,12 @@
     "mexico-city": 4.18
   },
   "Jordan": {
-    "san-francisco": 27.97,
+    "los-angeles": 28.17,
     "atlanta": 24.23,
-    "monterrey": 17.09,
-    "los-angeles": 16.98,
-    "vancouver": 16.7,
+    "toronto": 24.12,
+    "guadalajara": 18.77,
+    "vancouver": 16.98,
+    "san-francisco": 16.78,
     "seattle": 16.7,
     "philadelphia": 16.61,
     "houston": 16.56,
@@ -412,10 +413,9 @@
     "mexico-city": 15.19,
     "boston": 14.6,
     "dallas": 14.6,
-    "toronto": 12.93,
     "kansas-city": 12.78,
     "miami": 12.71,
-    "guadalajara": 7.26
+    "monterrey": 5.57
   },
   "Mexico": {
     "mexico-city": 100.0,
@@ -512,22 +512,22 @@
     "mexico-city": 5.57
   },
   "Paraguay": {
-    "los-angeles": 28.76,
-    "toronto": 24.31,
+    "san-francisco": 28.66,
     "atlanta": 24.09,
-    "guadalajara": 18.73,
-    "vancouver": 17.21,
-    "san-francisco": 17.11,
+    "los-angeles": 17.21,
+    "vancouver": 17.02,
     "seattle": 17.02,
+    "monterrey": 17.0,
     "new-york": 16.34,
     "philadelphia": 16.32,
     "houston": 16.31,
     "mexico-city": 15.16,
     "boston": 14.51,
     "dallas": 14.49,
+    "toronto": 12.76,
     "kansas-city": 12.63,
     "miami": 12.57,
-    "monterrey": 5.48
+    "guadalajara": 7.22
   },
   "Portugal": {
     "new-york": 26.76,
@@ -693,21 +693,21 @@
   },
   "Tunisia": {
     "san-francisco": 23.04,
-    "vancouver": 23.04,
+    "atlanta": 22.56,
     "houston": 18.9,
     "philadelphia": 18.8,
     "new-york": 18.73,
     "dallas": 16.8,
     "boston": 16.53,
-    "guadalajara": 16.35,
     "kansas-city": 14.78,
-    "los-angeles": 14.7,
+    "vancouver": 14.7,
+    "seattle": 14.7,
     "toronto": 14.63,
-    "seattle": 14.63,
+    "los-angeles": 14.63,
     "miami": 14.55,
-    "atlanta": 14.55,
     "monterrey": 14.35,
-    "mexico-city": 4.15
+    "mexico-city": 12.16,
+    "guadalajara": 8.34
   },
   "UEFA Playoff A": {
     "los-angeles": 31.81,

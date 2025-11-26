@@ -1,0 +1,9 @@
+127.0.0.1 - - [26/Nov/2025 14:51:45] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:52:00] "GET /city_probability_viewer.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:52:00] "GET /team_city_probabilities.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:52:00] "GET /fifa_official_stats.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:52:01] "GET /draw_stats.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:52:01] "GET /teams.csv?v=1764168721222 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /city_team_viewer.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /team_city_probabilities.json?v=1764169027379 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /teams.csv?v=1764169027637 HTTP/1.1" 200 -

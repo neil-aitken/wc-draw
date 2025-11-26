@@ -22,56 +22,56 @@ from wc_draw.city_probabilities import (
 )
 
 
-# Pot assignments for all teams
+# Pot assignments for all teams (sourced from teams.csv)
 POT_ASSIGNMENTS = {
-    # Pot 1 (top seeds + hosts)
-    "Spain": 1,
+    # Pot 1
     "Argentina": 1,
-    "France": 1,
-    "England": 1,
-    "Brazil": 1,
     "Belgium": 1,
+    "Brazil": 1,
+    "Canada": 1,
+    "England": 1,
+    "France": 1,
+    "Germany": 1,
+    "Mexico": 1,
     "Netherlands": 1,
     "Portugal": 1,
-    "Germany": 1,
-    "Croatia": 1,
-    "Mexico": 1,  # Host
-    "United States": 1,  # Host
-    "Canada": 1,  # Host
+    "Spain": 1,
+    "United States": 1,
     # Pot 2
-    "Uruguay": 2,
+    "Australia": 2,
+    "Austria": 2,
     "Colombia": 2,
-    "Senegal": 2,
+    "Croatia": 2,
+    "Ecuador": 2,
     "Iran": 2,
     "Japan": 2,
     "Morocco": 2,
-    "Switzerland": 2,
-    "Australia": 2,
+    "Senegal": 2,
     "South Korea": 2,
-    "Egypt": 2,
-    "Algeria": 2,
-    "Tunisia": 2,
+    "Switzerland": 2,
+    "Uruguay": 2,
     # Pot 3
-    "Scotland": 3,
-    "Austria": 3,
-    "Norway": 3,
-    "Ecuador": 3,
-    "Ghana": 3,
-    "Saudi Arabia": 3,
-    "Qatar": 3,
-    "Uzbekistan": 3,
-    "South Africa": 3,
+    "Algeria": 3,
+    "Egypt": 3,
     "Ivory Coast": 3,
-    "Cape Verde": 3,
-    "Jordan": 3,
+    "Norway": 3,
+    "Panama": 3,
+    "Paraguay": 3,
+    "Qatar": 3,
+    "Saudi Arabia": 3,
+    "Scotland": 3,
+    "South Africa": 3,
+    "Tunisia": 3,
+    "Uzbekistan": 3,
     # Pot 4
-    "New Zealand": 4,
-    "Paraguay": 4,
+    "Cape Verde": 4,
     "Curacao": 4,
-    "Panama": 4,
+    "Ghana": 4,
     "Haiti": 4,
     "Inter Path 1": 4,
     "Inter Path 2": 4,
+    "Jordan": 4,
+    "New Zealand": 4,
     "UEFA Playoff A": 4,
     "UEFA Playoff B": 4,
     "UEFA Playoff C": 4,
@@ -177,7 +177,10 @@ def main():
     print(f"\nLoading FIFA statistics from {stats_file}...")
     fifa_stats = load_fifa_stats(stats_file)
     print(f"  Teams: {len(fifa_stats['teams'])}")
-    print(f"  Runs: {fifa_stats['total_runs']:,}")
+    if 'total_runs' in fifa_stats:
+        print(f"  Runs: {fifa_stats['total_runs']:,}")
+    elif 'successes' in fifa_stats:
+        print(f"  Successful draws: {fifa_stats['successes']:,}")
 
     # Build city probability map
     print(f"\nParsing group stage details from {details_file}...")
