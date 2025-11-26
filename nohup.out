@@ -7,3 +7,31 @@
 127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /city_team_viewer.html HTTP/1.1" 200 -
 127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /team_city_probabilities.json?v=1764169027379 HTTP/1.1" 200 -
 127.0.0.1 - - [26/Nov/2025 14:57:07] "GET /teams.csv?v=1764169027637 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:18:49] "GET /city_probability_viewer.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:18:49] "GET /team_city_probabilities.json HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:18:50] "GET /fifa_official_stats.json HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:18:50] "GET /draw_stats.json HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:18:50] "GET /teams.csv?v=1764173930285 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:19:05] "GET /city_probability_viewer.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:19:05] "GET /team_city_probabilities.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:19:05] code 404, message File not found
+127.0.0.1 - - [26/Nov/2025 16:19:05] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [26/Nov/2025 16:19:06] "GET /teams.csv?v=1764173945745 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:20:54] "GET /city_probability_viewer.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:20:55] "GET /teams.csv?v=1764174054853 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:21:22] "GET /city_probability_viewer.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:21:22] "GET /teams.csv?v=1764174082319 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:21:25] "GET /city_probability_viewer.html HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:21:25] "GET /team_city_probabilities.json HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:21:26] code 404, message File not found
+127.0.0.1 - - [26/Nov/2025 16:21:26] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [26/Nov/2025 16:21:26] "GET /teams.csv?v=1764174085985 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:22:22] "GET /city_probability_viewer.html HTTP/1.1" 304 -
+127.0.0.1 - - [26/Nov/2025 16:22:22] "GET /teams.csv?v=1764174142320 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:22:45] "GET /city_team_viewer.html?v=2 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:22:46] "GET /draw_stats.json?v=1764174166013 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:22:46] "GET /teams.csv?v=1764174166312 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:25:37] "GET /city_team_viewer.html?v=2 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:25:37] "GET /draw_stats.json?v=1764174337310 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:25:37] "GET /team_city_probabilities.json?v=1764174337575 HTTP/1.1" 200 -
+127.0.0.1 - - [26/Nov/2025 16:25:38] "GET /teams.csv?v=1764174337840 HTTP/1.1" 200 -

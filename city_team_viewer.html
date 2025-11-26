@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 World Cup - City Match Probabilities</title>
+    <title>2026 World Cup - Team Opponent Probabilities by Pot</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -79,18 +79,63 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .chart-container {
-            position: relative;
-            height: 800px;
-            margin-top: 20px;
+        .charts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .pots-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .bottom-row {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .chart-section {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .chart-title {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 15px;
             text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+
+        .team-info {
+            text-align: center;
+            padding: 20px;
+            background: #edf2f7;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .team-info h2 {
+            font-size: 2em;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .team-info .pot-label {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 600;
         }
 
         .loading {
@@ -121,255 +166,264 @@
                 flex-direction: column;
                 gap: 15px;
             }
+
+            .pots-row {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏙️ 2026 World Cup City Analysis</h1>
-        <p class="subtitle">Select a city to see which teams are most likely to play there in the group stage</p>
+        <h1>⚽ 2026 World Cup Opponent Analysis</h1>
+        <p class="subtitle">Select a team to see their most likely opponents from each pot</p>
 
         <div class="controls">
-            <label for="citySelect">Choose a city:</label>
-            <select id="citySelect">
-                <option value="">Loading cities...</option>
+            <label for="teamSelect">Choose a team:</label>
+            <select id="teamSelect">
+                <option value="">Loading teams...</option>
             </select>
         </div>
 
-        <div class="chart-container">
-            <div class="chart-title" id="chartTitle">Team Probabilities</div>
-            <canvas id="teamChart"></canvas>
+        <div id="teamInfo" class="team-info" style="display: none;">
+            <h2 id="teamName"></h2>
+            <div class="pot-label" id="teamPot"></div>
+        </div>
+
+        <div class="charts-container" id="chartsContainer">
+            <div class="loading">Select a team to view opponent probabilities</div>
         </div>
     </div>
 
     <script>
-        let cityData = {};
-        let teamChart = null;
-        let teamFlags = {};
-        let flagCodeMap = {};
+        let drawStats = {};
+        let teamPots = {};
+        let teamCityData = {};
+        let charts = [];
         
-        // Mapping for country codes to flagcdn codes
-        const countryCodeMap = {
-            '🇦🇺': 'au', '🇮🇷': 'ir', '🇯🇵': 'jp', '🇯🇴': 'jo', '🇶🇦': 'qa', '🇸🇦': 'sa', '🇰🇷': 'kr', '🇺🇿': 'uz',
-            '🇩🇿': 'dz', '🇨🇻': 'cv', '🇪🇬': 'eg', '🇬🇭': 'gh', '🇨🇮': 'ci', '🇲🇦': 'ma', '🇸🇳': 'sn', '🇿🇦': 'za', '🇹🇳': 'tn',
-            '🇨🇦': 'ca', '🇨🇼': 'cw', '🇭🇹': 'ht', '🇲🇽': 'mx', '🇵🇦': 'pa', '🇺🇸': 'us',
-            '🇦🇷': 'ar', '🇧🇷': 'br', '🇨🇴': 'co', '🇪🇨': 'ec', '🇵🇾': 'py', '🇺🇾': 'uy',
-            '🇳🇿': 'nz',
-            '🇦🇹': 'at', '🇧🇪': 'be', '🇭🇷': 'hr', 'EN': 'gb-eng', '🇫🇷': 'fr', '🇩🇪': 'de', '🇳🇱': 'nl', '🇳🇴': 'no', '🇵🇹': 'pt', 'SC': 'gb-sct', '🇪🇸': 'es', '🇨🇭': 'ch',
-            'WL/BA/IT/NI': ['gb-wls', 'ba', 'it', 'gb-nir'], 
-            'UA/SE/PL/AL': ['ua', 'se', 'pl', 'al'], 
-            'SK/XK/TR/RO': ['sk', 'xk', 'tr', 'ro'], 
-            'CZ/IE/DK/MK': ['cz', 'ie', 'dk', 'mk'],
-            'CD/NC/JM': ['cd', 'nc', 'jm'], 
-            'IQ/BO/SR': ['iq', 'bo', 'sr']
-        };
-        
-        const cities = [
-            'atlanta', 'boston', 'dallas', 'guadalajara', 'houston', 'kansas-city',
-            'los-angeles', 'mexico-city', 'miami', 'monterrey', 'new-york',
-            'philadelphia', 'san-francisco', 'seattle', 'toronto', 'vancouver'
-        ];
-
-        // City display names
-        const cityNames = {
-            'atlanta': 'Atlanta',
-            'boston': 'Boston',
-            'dallas': 'Dallas',
-            'guadalajara': 'Guadalajara',
-            'houston': 'Houston',
-            'kansas-city': 'Kansas City',
-            'los-angeles': 'Los Angeles',
-            'mexico-city': 'Mexico City',
-            'miami': 'Miami',
-            'monterrey': 'Monterrey',
-            'new-york': 'New York/New Jersey',
-            'philadelphia': 'Philadelphia',
-            'san-francisco': 'San Francisco Bay Area',
-            'seattle': 'Seattle',
-            'toronto': 'Toronto',
-            'vancouver': 'Vancouver'
-        };
-
         // Load the data
         async function loadData() {
             try {
-                const cityResponse = await fetch('team_city_probabilities.json?v=' + Date.now());
-                cityData = await cityResponse.json();
+                // Load draw stats for opponent probabilities
+                const statsResponse = await fetch('draw_stats.json?v=' + Date.now());
+                drawStats = await statsResponse.json();
 
-                // Load team flags from teams.csv
+                // Load city probabilities
+                const cityResponse = await fetch('team_city_probabilities.json?v=' + Date.now());
+                teamCityData = await cityResponse.json();
+
+                // Load team pots from teams.csv
                 const csvResponse = await fetch('teams.csv?v=' + Date.now());
                 const csvText = await csvResponse.text();
                 
-                // Parse CSV for flags
+                // Parse CSV for pot information
                 csvText.split('\n').forEach(line => {
                     if (line.startsWith('#') || !line.trim()) return;
                     const parts = line.split(',');
-                    if (parts.length >= 6) {
+                    if (parts.length >= 3) {
                         const teamName = parts[0].trim();
-                        const flag = parts[5].trim();
-                        teamFlags[teamName] = flag;
-                        
-                        // Convert flag to country code for flagcdn
-                        const countryCode = countryCodeMap[flag] || flag.toLowerCase();
-                        flagCodeMap[teamName] = countryCode;
+                        const pot = parseInt(parts[2].trim());
+                        teamPots[teamName] = pot;
                     }
                 });
 
-                // Populate city dropdown
-                const citySelect = document.getElementById('citySelect');
-                citySelect.innerHTML = '<option value="">-- Select a City --</option>';
+                // Populate team dropdown
+                const teamSelect = document.getElementById('teamSelect');
+                teamSelect.innerHTML = '<option value="">-- Select a Team --</option>';
                 
-                cities.forEach(city => {
+                const teams = Object.keys(drawStats.teams).sort();
+                teams.forEach(team => {
                     const option = document.createElement('option');
-                    option.value = city;
-                    option.textContent = cityNames[city] || city;
-                    citySelect.appendChild(option);
+                    option.value = team;
+                    const pot = teamPots[team] || '?';
+                    option.textContent = `${team} (Pot ${pot})`;
+                    teamSelect.appendChild(option);
                 });
 
-                citySelect.addEventListener('change', (e) => {
+                teamSelect.addEventListener('change', (e) => {
                     if (e.target.value) {
-                        updateChart(e.target.value);
+                        updateCharts(e.target.value);
                     }
                 });
-
-                // Load first city by default
-                citySelect.value = cities[0];
-                updateChart(cities[0]);
 
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.querySelector('.chart-container').innerHTML = 
+                document.getElementById('chartsContainer').innerHTML = 
                     '<div class="error">Error loading data. Please refresh the page.</div>';
             }
         }
 
-        // Update chart for selected city
-        function updateChart(city) {
-            const cityDisplayName = cityNames[city] || city;
-            document.getElementById('chartTitle').textContent = 
-                `Teams Most Likely to Play in ${cityDisplayName}`;
+        // Update charts for selected team
+        function updateCharts(teamName) {
+            // Show team info
+            document.getElementById('teamInfo').style.display = 'block';
+            document.getElementById('teamName').textContent = teamName;
+            const teamPot = teamPots[teamName];
+            document.getElementById('teamPot').textContent = `Pot ${teamPot}`;
 
-            // Extract probabilities for this city from all teams
-            const teamProbabilities = [];
-            for (const [team, cities] of Object.entries(cityData)) {
-                const prob = cities[city] || 0;
-                if (prob > 0) {
-                    teamProbabilities.push({ team, prob });
+            // Get opponent probabilities
+            const teamData = drawStats.teams[teamName];
+            if (!teamData || !teamData.pair_pct) {
+                document.getElementById('chartsContainer').innerHTML = 
+                    '<div class="error">No opponent data available for this team.</div>';
+                return;
+            }
+
+            const opponents = teamData.pair_pct;
+            const groupProbs = teamData.group_pct;
+
+            // Group opponents by pot
+            const opponentsByPot = { 1: [], 2: [], 3: [], 4: [] };
+            
+            for (const [opponent, prob] of Object.entries(opponents)) {
+                const opponentPot = teamPots[opponent];
+                if (opponentPot && opponentPot !== teamPot && prob > 0) {
+                    opponentsByPot[opponentPot].push({ team: opponent, prob });
                 }
             }
 
-            // Sort by probability (descending)
-            teamProbabilities.sort((a, b) => b.prob - a.prob);
+            // Sort each pot by probability
+            for (const pot in opponentsByPot) {
+                opponentsByPot[pot].sort((a, b) => b.prob - a.prob);
+            }
 
-            const teams = teamProbabilities.map(t => t.team);
-            const probabilities = teamProbabilities.map(t => t.prob);
+            // Clear existing charts
+            charts.forEach(chart => chart.destroy());
+            charts = [];
 
-            // Create empty labels - we'll only show flags
-            const teamLabels = teams.map(() => '');
+            // Create chart sections
+            const container = document.getElementById('chartsContainer');
+            container.innerHTML = '';
 
-            // Preload flag images
-            const flagImages = {};
-            teams.forEach(team => {
-                const code = flagCodeMap[team];
-                if (code) {
-                    if (Array.isArray(code)) {
-                        // Multiple flags for playoff paths
-                        flagImages[team] = code.map(c => {
-                            const img = new Image();
-                            img.src = `https://flagcdn.com/24x18/${c}.png`;
-                            return img;
-                        });
-                    } else {
-                        // Single flag
-                        const img = new Image();
-                        img.src = `https://flagcdn.com/24x18/${code}.png`;
-                        flagImages[team] = [img];
-                    }
-                }
+            // Create top row for pot opponents (3 charts)
+            const potsRow = document.createElement('div');
+            potsRow.className = 'pots-row';
+            container.appendChild(potsRow);
+
+            // Determine which pots to show (exclude team's own pot)
+            const potsToShow = [1, 2, 3, 4].filter(pot => pot !== teamPot);
+
+            potsToShow.forEach(pot => {
+                const opponents = opponentsByPot[pot];
+                if (opponents.length === 0) return;
+
+                // Create section
+                const section = document.createElement('div');
+                section.className = 'chart-section';
+                
+                const title = document.createElement('div');
+                title.className = 'chart-title';
+                title.textContent = `Pot ${pot} Opponents`;
+                section.appendChild(title);
+
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'chart-container';
+                const canvas = document.createElement('canvas');
+                chartContainer.appendChild(canvas);
+                section.appendChild(chartContainer);
+
+                potsRow.appendChild(section);
+
+                // Create chart
+                const ctx = canvas.getContext('2d');
+                const chart = createOpponentChart(ctx, opponents, pot);
+                charts.push(chart);
             });
-            
-            // Plugin to draw flag images
-            const flagImagePlugin = {
-                id: 'flagImages',
-                afterDraw: (chart) => {
-                    const ctx = chart.ctx;
-                    const yAxis = chart.scales.y;
-                    
-                    teams.forEach((team, index) => {
-                        const imgs = flagImages[team];
-                        if (imgs && imgs.length > 0) {
-                            const y = yAxis.getPixelForValue(index);
-                            const totalWidth = imgs.length * 26 - 2;
-                            let xOffset = chart.chartArea.left - totalWidth - 5;
-                            
-                            // Draw all flags for this team
-                            imgs.forEach((img) => {
-                                if (img.complete) {
-                                    ctx.drawImage(img, xOffset, y - 9, 24, 18);
-                                    xOffset += 26;
-                                }
-                            });
-                        }
-                    });
-                }
+
+            // Create bottom row for cities and groups (2 charts)
+            const bottomRow = document.createElement('div');
+            bottomRow.className = 'bottom-row';
+            container.appendChild(bottomRow);
+
+            // Cities chart
+            const cityProbs = teamCityData[teamName] || {};
+            if (Object.keys(cityProbs).length > 0) {
+                const citySection = document.createElement('div');
+                citySection.className = 'chart-section';
+                
+                const cityTitle = document.createElement('div');
+                cityTitle.className = 'chart-title';
+                cityTitle.textContent = 'City Probabilities';
+                citySection.appendChild(cityTitle);
+
+                const cityChartContainer = document.createElement('div');
+                cityChartContainer.className = 'chart-container';
+                const cityCanvas = document.createElement('canvas');
+                cityChartContainer.appendChild(cityCanvas);
+                citySection.appendChild(cityChartContainer);
+
+                bottomRow.appendChild(citySection);
+
+                const cityCtx = cityCanvas.getContext('2d');
+                const cityChart = createCityChart(cityCtx, cityProbs);
+                charts.push(cityChart);
+            }
+
+            // Groups chart
+            if (groupProbs && Object.keys(groupProbs).length > 0) {
+                const groupSection = document.createElement('div');
+                groupSection.className = 'chart-section';
+                
+                const groupTitle = document.createElement('div');
+                groupTitle.className = 'chart-title';
+                groupTitle.textContent = 'Group Probabilities';
+                groupSection.appendChild(groupTitle);
+
+                const groupChartContainer = document.createElement('div');
+                groupChartContainer.className = 'chart-container';
+                const groupCanvas = document.createElement('canvas');
+                groupChartContainer.appendChild(groupCanvas);
+                groupSection.appendChild(groupChartContainer);
+
+                bottomRow.appendChild(groupSection);
+
+                const groupCtx = groupCanvas.getContext('2d');
+                const groupChart = createGroupChart(groupCtx, groupProbs);
+                charts.push(groupChart);
+            }
+        }
+
+        function createOpponentChart(ctx, opponents, pot) {
+            const teams = opponents.map(o => o.team);
+            const probabilities = opponents.map(o => o.prob);
+
+            // Color scheme by pot
+            const potColors = {
+                1: { base: 'rgba(220, 38, 38, 0.8)', border: 'rgba(220, 38, 38, 1)' },    // Red
+                2: { base: 'rgba(234, 179, 8, 0.8)', border: 'rgba(234, 179, 8, 1)' },   // Yellow
+                3: { base: 'rgba(34, 197, 94, 0.8)', border: 'rgba(34, 197, 94, 1)' },   // Green
+                4: { base: 'rgba(59, 130, 246, 0.8)', border: 'rgba(59, 130, 246, 1)' }  // Blue
             };
 
-            // Create gradient colors based on probability
-            const maxProb = Math.max(...probabilities);
-            const minProb = Math.min(...probabilities);
-            const colors = probabilities.map(prob => {
-                const ratio = (prob - minProb) / (maxProb - minProb);
-                
-                // Blue gradient: light blue (low) to dark blue (high)
-                const r = Math.round(66 + (1 - ratio) * (100));
-                const g = Math.round(126 + (1 - ratio) * (80));
-                const b = Math.round(234 + (1 - ratio) * (20));
-                
-                return `rgba(${r}, ${g}, ${b}, 0.8)`;
-            });
+            const colors = potColors[pot];
 
-            // Destroy existing chart
-            if (teamChart) {
-                teamChart.destroy();
-            }
-
-            // Create new chart
-            const ctx = document.getElementById('teamChart').getContext('2d');
-            teamChart = new Chart(ctx, {
+            return new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: teamLabels,
+                    labels: teams,
                     datasets: [{
                         label: 'Probability (%)',
                         data: probabilities,
-                        backgroundColor: colors,
-                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        backgroundColor: colors.base,
+                        borderColor: colors.border,
                         borderWidth: 2,
                         borderRadius: 6,
                     }]
                 },
-                plugins: [flagImagePlugin],
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    layout: {
-                        padding: {
-                            left: 110 // Space for up to 4 flag images
-                        }
-                    },
                     plugins: {
                         legend: {
                             display: false
                         },
-                        title: {
-                            display: false
-                        },
                         tooltip: {
                             callbacks: {
-                                title: function(context) {
-                                    return teams[context[0].dataIndex];
-                                },
                                 label: function(context) {
                                     return `Probability: ${context.parsed.x.toFixed(2)}%`;
                                 }
@@ -388,17 +442,20 @@
                     scales: {
                         x: {
                             beginAtZero: true,
-                            max: Math.ceil(Math.max(...probabilities) / 10) * 10,
                             title: {
                                 display: true,
-                                text: 'Probability of Playing at Least One Group Stage Match (%)',
+                                text: 'Probability (%)',
                                 font: {
-                                    size: 14,
+                                    size: 12,
                                     weight: 'bold'
-                                }
+                                },
+                                color: '#4a5568'
                             },
                             grid: {
                                 color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                color: '#4a5568'
                             }
                         },
                         y: {
@@ -409,9 +466,8 @@
                                 font: {
                                     size: 11
                                 },
-                                autoSkip: false,
-                                maxRotation: 0,
-                                minRotation: 0
+                                color: '#2d3748',
+                                autoSkip: false
                             }
                         }
                     },
@@ -423,8 +479,155 @@
             });
         }
 
+        function createCityChart(ctx, cityProbs) {
+            const cityNames = {
+                'atlanta': 'Atlanta', 'boston': 'Boston', 'dallas': 'Dallas',
+                'guadalajara': 'Guadalajara', 'houston': 'Houston', 'kansas-city': 'Kansas City',
+                'los-angeles': 'Los Angeles', 'mexico-city': 'Mexico City', 'miami': 'Miami',
+                'monterrey': 'Monterrey', 'new-york': 'New York/NJ', 'philadelphia': 'Philadelphia',
+                'san-francisco': 'San Francisco', 'seattle': 'Seattle', 'toronto': 'Toronto',
+                'vancouver': 'Vancouver'
+            };
+
+            const cities = Object.entries(cityProbs)
+                .map(([city, prob]) => ({ city: cityNames[city] || city, prob }))
+                .sort((a, b) => b.prob - a.prob);
+
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: cities.map(c => c.city),
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: cities.map(c => c.prob),
+                        backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Probability: ${context.parsed.x.toFixed(2)}%`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Probability (%)',
+                                font: { size: 12, weight: 'bold' },
+                                color: '#4a5568'
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: { color: '#4a5568' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#2d3748',
+                                autoSkip: false
+                            }
+                        }
+                    },
+                    animation: { duration: 750, easing: 'easeInOutQuart' }
+                }
+            });
+        }
+
+        function createGroupChart(ctx, groupProbs) {
+            const groups = Object.entries(groupProbs)
+                .map(([group, prob]) => ({ group, prob }))
+                .sort((a, b) => a.group.localeCompare(b.group));
+
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: groups.map(g => `Group ${g.group}`),
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: groups.map(g => g.prob),
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Probability: ${context.parsed.y.toFixed(2)}%`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11 },
+                                color: '#2d3748'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Probability (%)',
+                                font: { size: 12, weight: 'bold' },
+                                color: '#4a5568'
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: { color: '#4a5568' }
+                        }
+                    },
+                    animation: { duration: 750, easing: 'easeInOutQuart' }
+                }
+            });
+        }
+
         // Load data when page loads
         loadData();
     </script>
 </body>
 </html>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            background: white;
