@@ -222,6 +222,24 @@
         let position4Chart = null;
         let teamData = {};
         let teamPots = {};
+        let teamFlags = {};
+        let flagCodeMap = {};
+        
+        // Mapping for country codes to flagcdn codes
+        const countryCodeMap = {
+            '🇦🇺': 'au', '🇮🇷': 'ir', '🇯🇵': 'jp', '🇯🇴': 'jo', '🇶🇦': 'qa', '🇸🇦': 'sa', '🇰🇷': 'kr', '🇺🇿': 'uz',
+            '🇩🇿': 'dz', '🇨🇻': 'cv', '🇪🇬': 'eg', '🇬🇭': 'gh', '🇨🇮': 'ci', '🇲🇦': 'ma', '🇸🇳': 'sn', '🇿🇦': 'za', '🇹🇳': 'tn',
+            '🇨🇦': 'ca', '🇨🇼': 'cw', '🇭🇹': 'ht', '🇲🇽': 'mx', '🇵🇦': 'pa', '🇺🇸': 'us',
+            '🇦🇷': 'ar', '🇧🇷': 'br', '🇨🇴': 'co', '🇪🇨': 'ec', '🇵🇾': 'py', '🇺🇾': 'uy',
+            '🇳🇿': 'nz',
+            '🇦🇹': 'at', '🇧🇪': 'be', '🇭🇷': 'hr', 'EN': 'gb-eng', '🇫🇷': 'fr', '🇩🇪': 'de', '🇳🇱': 'nl', '🇳🇴': 'no', '🇵🇹': 'pt', 'SC': 'gb-sct', '🇪🇸': 'es', '🇨🇭': 'ch',
+            'WL/BA/IT/NI': ['gb-wls', 'ba', 'it', 'gb-nir'], 
+            'UA/SE/PL/AL': ['ua', 'se', 'pl', 'al'], 
+            'SK/XK/TR/RO': ['sk', 'xk', 'tr', 'ro'], 
+            'CZ/IE/DK/MK': ['cz', 'ie', 'dk', 'mk'],
+            'CD/NC/JM': ['cd', 'nc', 'jm'], 
+            'IQ/BO/SR': ['iq', 'bo', 'sr']
+        };
 
         // Load teams and their pot assignments from CSV
         async function loadTeams() {
@@ -237,6 +255,16 @@
                     const teamName = parts[0].trim();
                     const pot = parseInt(parts[2].trim());
                     teamPots[teamName] = pot;
+                    
+                    // Load flags
+                    if (parts.length >= 6) {
+                        const flag = parts[5].trim();
+                        teamFlags[teamName] = flag;
+                        
+                        // Convert flag to country code for flagcdn
+                        const countryCode = countryCodeMap[flag] || flag.toLowerCase();
+                        flagCodeMap[teamName] = countryCode;
+                    }
                 }
             }
         }
@@ -285,6 +313,56 @@
 
             const teams = potTeams.map(item => item.team);
             const probabilities = potTeams.map(item => item.prob);
+            
+            // Create empty labels - we'll only show flags
+            const teamLabels = teams.map(() => '');
+
+            // Preload flag images
+            const flagImages = {};
+            teams.forEach(team => {
+                const code = flagCodeMap[team];
+                if (code) {
+                    if (Array.isArray(code)) {
+                        // Multiple flags for playoff paths
+                        flagImages[team] = code.map(c => {
+                            const img = new Image();
+                            img.src = `https://flagcdn.com/24x18/${c}.png`;
+                            return img;
+                        });
+                    } else {
+                        // Single flag
+                        const img = new Image();
+                        img.src = `https://flagcdn.com/24x18/${code}.png`;
+                        flagImages[team] = [img];
+                    }
+                }
+            });
+            
+            // Plugin to draw flag images
+            const flagImagePlugin = {
+                id: 'flagImages',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const yAxis = chart.scales.y;
+                    
+                    teams.forEach((team, index) => {
+                        const imgs = flagImages[team];
+                        if (imgs && imgs.length > 0) {
+                            const y = yAxis.getPixelForValue(index);
+                            const totalWidth = imgs.length * 26 - 2;
+                            let xOffset = chart.chartArea.left - totalWidth - 5;
+                            
+                            // Draw all flags for this team
+                            imgs.forEach((img) => {
+                                if (img.complete) {
+                                    ctx.drawImage(img, xOffset, y - 9, 24, 18);
+                                    xOffset += 26;
+                                }
+                            });
+                        }
+                    });
+                }
+            };
 
             // Get the chart instance variable
             let chartInstance;
@@ -302,8 +380,9 @@
             const ctx = document.getElementById(canvasId).getContext('2d');
             const newChart = new Chart(ctx, {
                 type: 'bar',
+                plugins: [flagImagePlugin],
                 data: {
-                    labels: teams,
+                    labels: teamLabels,
                     datasets: [{
                         label: 'Probability (%)',
                         data: probabilities,
@@ -320,7 +399,7 @@
                     maintainAspectRatio: false,
                     layout: {
                         padding: {
-                            left: 10,
+                            left: 120,
                             right: 20,
                             top: 10,
                             bottom: 10
@@ -378,6 +457,9 @@
                             padding: 12,
                             displayColors: false,
                             callbacks: {
+                                title: function(context) {
+                                    return teams[context[0].dataIndex];
+                                },
                                 label: function(context) {
                                     return context.parsed.x.toFixed(2) + '%';
                                 }
