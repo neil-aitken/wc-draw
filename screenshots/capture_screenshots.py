@@ -3,6 +3,7 @@ Automated screenshot capture for World Cup draw visualizations.
 Captures screenshots for all cities and teams.
 """
 
+import argparse
 import asyncio
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -113,7 +114,7 @@ async def capture_team_views(base_url: str = "http://localhost:8080"):
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page(viewport={"width": 1920, "height": 1080})
+        page = await browser.new_page(viewport={"width": 2560, "height": 1440})
 
         for team in teams:
             print(f"Capturing screenshot for {team}...")
@@ -128,8 +129,8 @@ async def capture_team_views(base_url: str = "http://localhost:8080"):
                 # Select the team from dropdown
                 await page.select_option("select#teamSelect", team)
 
-                # Wait for charts to render
-                await page.wait_for_timeout(2000)
+                # Wait for charts to render and resize
+                await page.wait_for_timeout(3000)
 
                 # Take screenshot
                 filename = f"{team.lower().replace(' ', '_').replace('/', '-')}.png"
@@ -147,6 +148,21 @@ async def capture_team_views(base_url: str = "http://localhost:8080"):
 
 async def main():
     """Main function to capture all screenshots."""
+    parser = argparse.ArgumentParser(
+        description="Capture screenshots for World Cup draw visualizations"
+    )
+    parser.add_argument(
+        "--cities-only",
+        action="store_true",
+        help="Capture only city view screenshots",
+    )
+    parser.add_argument(
+        "--teams-only",
+        action="store_true",
+        help="Capture only team view screenshots",
+    )
+    args = parser.parse_args()
+
     base_url = "http://localhost:8080"
 
     print("=" * 60)
@@ -155,12 +171,14 @@ async def main():
     print()
 
     # Capture city views
-    await capture_city_views(base_url)
-    print()
+    if not args.teams_only:
+        await capture_city_views(base_url)
+        print()
 
     # Capture team views
-    await capture_team_views(base_url)
-    print()
+    if not args.cities_only:
+        await capture_team_views(base_url)
+        print()
 
     print("=" * 60)
     print("✓ All screenshots captured successfully!")
