@@ -47,6 +47,9 @@ CITY_NAMES = {
     "vancouver": "Vancouver",
 }
 
+# Group configurations
+GROUPS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+
 
 async def capture_city_views(base_url: str = "http://localhost:8080"):
     """Capture screenshots for all city views."""
@@ -87,6 +90,47 @@ async def capture_city_views(base_url: str = "http://localhost:8080"):
         await browser.close()
 
     print("\n✓ All city view screenshots captured!")
+    print(f"  Output directory: {output_dir}")
+
+
+async def capture_group_views(base_url: str = "http://localhost:8080"):
+    """Capture screenshots for all group distribution views."""
+    output_dir = Path(__file__).parent / "group_views"
+    output_dir.mkdir(exist_ok=True)
+
+    print("Capturing group distribution screenshots...\n")
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page(viewport={"width": 2560, "height": 1440})
+
+        for group in GROUPS:
+            print(f"Capturing screenshot for Group {group}...")
+
+            try:
+                # Navigate to page
+                await page.goto(f"{base_url}/group_viewer.html")
+
+                # Wait for page to load
+                await page.wait_for_load_state("networkidle")
+
+                # Select the group from dropdown
+                await page.select_option("select#groupSelect", group)
+
+                # Wait for charts to render
+                await page.wait_for_timeout(2000)
+
+                # Take screenshot
+                filename = f"group_{group}.png"
+                await page.screenshot(path=output_dir / filename, full_page=True)
+
+                print(f"✓ Saved {filename}")
+            except Exception as e:
+                print(f"✗ Failed to capture Group {group}: {e}")
+
+        await browser.close()
+
+    print("\n✓ All group view screenshots captured!")
     print(f"  Output directory: {output_dir}")
 
 
@@ -161,6 +205,11 @@ async def main():
         action="store_true",
         help="Capture only team view screenshots",
     )
+    parser.add_argument(
+        "--groups-only",
+        action="store_true",
+        help="Capture only group distribution screenshots",
+    )
     args = parser.parse_args()
 
     base_url = "http://localhost:8080"
@@ -171,12 +220,17 @@ async def main():
     print()
 
     # Capture city views
-    if not args.teams_only:
+    if not args.teams_only and not args.groups_only:
         await capture_city_views(base_url)
         print()
 
+    # Capture group views
+    if not args.teams_only and not args.cities_only:
+        await capture_group_views(base_url)
+        print()
+
     # Capture team views
-    if not args.cities_only:
+    if not args.cities_only and not args.groups_only:
         await capture_team_views(base_url)
         print()
 
