@@ -119,7 +119,7 @@
 
         .charts-wrapper {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1.2fr 0.8fr 1.2fr;
             gap: 20px;
             margin-top: 20px;
         }
@@ -225,6 +225,23 @@
         let opponentData = {};
         let teamCandidates = {}; // Store playoff candidates
         let teamFlags = {}; // Store team flags
+        let flagCodeMap = {}; // Map team name to ISO country code
+        
+        // Mapping for country codes to flagcdn codes
+        const countryCodeMap = {
+            '🇦🇺': 'au', '🇮🇷': 'ir', '🇯🇵': 'jp', '🇯🇴': 'jo', '🇶🇦': 'qa', '🇸🇦': 'sa', '🇰🇷': 'kr', '🇺🇿': 'uz',
+            '🇩🇿': 'dz', '🇨🇻': 'cv', '🇪🇬': 'eg', '🇬🇭': 'gh', '🇨🇮': 'ci', '🇲🇦': 'ma', '🇸🇳': 'sn', '🇿🇦': 'za', '🇹🇳': 'tn',
+            '🇨🇦': 'ca', '🇨🇼': 'cw', '🇭🇹': 'ht', '🇲🇽': 'mx', '🇵🇦': 'pa', '🇺🇸': 'us',
+            '🇦🇷': 'ar', '🇧🇷': 'br', '🇨🇴': 'co', '🇪🇨': 'ec', '🇵🇾': 'py', '🇺🇾': 'uy',
+            '🇳🇿': 'nz',
+            '🇦🇹': 'at', '🇧🇪': 'be', '🇭🇷': 'hr', 'EN': 'gb-eng', '🇫🇷': 'fr', '🇩🇪': 'de', '🇳🇱': 'nl', '🇳🇴': 'no', '🇵🇹': 'pt', 'SC': 'gb-sct', '🇪🇸': 'es', '🇨🇭': 'ch',
+            'WL/BA/IT/NI': ['gb-wls', 'ba', 'it', 'gb-nir'], 
+            'UA/SE/PL/AL': ['ua', 'se', 'pl', 'al'], 
+            'SK/XK/TR/RO': ['sk', 'xk', 'tr', 'ro'], 
+            'CZ/IE/DK/MK': ['cz', 'ie', 'dk', 'mk'],
+            'CD/NC/JM': ['cd', 'nc', 'jm'], 
+            'IQ/BO/SR': ['iq', 'bo', 'sr']
+        };
         let cityChart = null;
         let groupChart = null;
         let opponentChart = null;
@@ -260,6 +277,10 @@
                         const teamName = parts[0].trim();
                         const flag = parts[5].trim();
                         teamFlags[teamName] = flag;
+                        
+                        // Convert flag to country code for flagcdn
+                        const countryCode = countryCodeMap[flag] || flag.toLowerCase();
+                        flagCodeMap[teamName] = countryCode;
                         
                         if (parts.length >= 7 && parts[6].trim()) {
                             const candidates = parts[6].trim().split(';').map(c => c.trim()).join('/');
@@ -541,12 +562,56 @@
             const opponents = sortedOpponents.map(([opp, _]) => opp);
             const probabilities = sortedOpponents.map(([_, prob]) => prob);
             
-            // Create labels with flags
-            const opponentLabels = opponents.map(opp => {
-                const flag = teamFlags[opp] || '';
-                return `${flag} ${opp}`;
-            });
+            // Create empty labels - we'll only show flags
+            const opponentLabels = opponents.map(() => '');
 
+            // Preload flag images
+            const flagImages = {};
+            opponents.forEach(opp => {
+                const code = flagCodeMap[opp];
+                if (code) {
+                    if (Array.isArray(code)) {
+                        // Multiple flags for playoff paths
+                        flagImages[opp] = code.map(c => {
+                            const img = new Image();
+                            img.src = `https://flagcdn.com/24x18/${c}.png`;
+                            return img;
+                        });
+                    } else {
+                        // Single flag
+                        const img = new Image();
+                        img.src = `https://flagcdn.com/24x18/${code}.png`;
+                        flagImages[opp] = [img];
+                    }
+                }
+            });
+            
+            // Plugin to draw flag images
+            const flagImagePlugin = {
+                id: 'flagImages',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const yAxis = chart.scales.y;
+                    
+                    opponents.forEach((opponent, index) => {
+                        const imgs = flagImages[opponent];
+                        if (imgs && imgs.length > 0) {
+                            const y = yAxis.getPixelForValue(index);
+                            const totalWidth = imgs.length * 26 - 2; // Total width of all flags
+                            let xOffset = chart.chartArea.left - totalWidth - 5; // Right justify
+                            
+                            // Draw all flags for this opponent
+                            imgs.forEach((img) => {
+                                if (img.complete) {
+                                    ctx.drawImage(img, xOffset, y - 9, 24, 18);
+                                    xOffset += 26; // Space between flags
+                                }
+                            });
+                        }
+                    });
+                }
+            };
+            
             // Create smooth heatmap gradient based on probability (green to yellow to red)
             const maxProb = Math.max(...probabilities);
             const minProb = Math.min(...probabilities);
@@ -593,10 +658,16 @@
                         borderRadius: 6,
                     }]
                 },
+                plugins: [flagImagePlugin],
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 110 // Space for up to 4 flag images
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -606,6 +677,9 @@
                         },
                         tooltip: {
                             callbacks: {
+                                title: function(context) {
+                                    return opponents[context[0].dataIndex];
+                                },
                                 label: function(context) {
                                     return `Probability: ${context.parsed.x.toFixed(2)}%`;
                                 }

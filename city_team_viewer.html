@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 World Cup - City Match Probabilities</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2d3748;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 1.1em;
+        }
+
+        select {
+            padding: 12px 20px;
+            font-size: 1em;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            color: #2d3748;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+
+        select:hover {
+            border-color: #667eea;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 800px;
+            margin-top: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+            font-size: 1.2em;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #e53e3e;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏙️ 2026 World Cup City Analysis</h1>
+        <p class="subtitle">Select a city to see which teams are most likely to play there in the group stage</p>
+
+        <div class="controls">
+            <label for="citySelect">Choose a city:</label>
+            <select id="citySelect">
+                <option value="">Loading cities...</option>
+            </select>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title" id="chartTitle">Team Probabilities</div>
+            <canvas id="teamChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let cityData = {};
+        let teamChart = null;
+        let teamFlags = {};
+        let flagCodeMap = {};
+        
+        // Mapping for country codes to flagcdn codes
+        const countryCodeMap = {
+            '🇦🇺': 'au', '🇮🇷': 'ir', '🇯🇵': 'jp', '🇯🇴': 'jo', '🇶🇦': 'qa', '🇸🇦': 'sa', '🇰🇷': 'kr', '🇺🇿': 'uz',
+            '🇩🇿': 'dz', '🇨🇻': 'cv', '🇪🇬': 'eg', '🇬🇭': 'gh', '🇨🇮': 'ci', '🇲🇦': 'ma', '🇸🇳': 'sn', '🇿🇦': 'za', '🇹🇳': 'tn',
+            '🇨🇦': 'ca', '🇨🇼': 'cw', '🇭🇹': 'ht', '🇲🇽': 'mx', '🇵🇦': 'pa', '🇺🇸': 'us',
+            '🇦🇷': 'ar', '🇧🇷': 'br', '🇨🇴': 'co', '🇪🇨': 'ec', '🇵🇾': 'py', '🇺🇾': 'uy',
+            '🇳🇿': 'nz',
+            '🇦🇹': 'at', '🇧🇪': 'be', '🇭🇷': 'hr', 'EN': 'gb-eng', '🇫🇷': 'fr', '🇩🇪': 'de', '🇳🇱': 'nl', '🇳🇴': 'no', '🇵🇹': 'pt', 'SC': 'gb-sct', '🇪🇸': 'es', '🇨🇭': 'ch',
+            'WL/BA/IT/NI': ['gb-wls', 'ba', 'it', 'gb-nir'], 
+            'UA/SE/PL/AL': ['ua', 'se', 'pl', 'al'], 
+            'SK/XK/TR/RO': ['sk', 'xk', 'tr', 'ro'], 
+            'CZ/IE/DK/MK': ['cz', 'ie', 'dk', 'mk'],
+            'CD/NC/JM': ['cd', 'nc', 'jm'], 
+            'IQ/BO/SR': ['iq', 'bo', 'sr']
+        };
+        
+        const cities = [
+            'atlanta', 'boston', 'dallas', 'guadalajara', 'houston', 'kansas-city',
+            'los-angeles', 'mexico-city', 'miami', 'monterrey', 'new-york',
+            'philadelphia', 'san-francisco', 'seattle', 'toronto', 'vancouver'
+        ];
+
+        // City display names
+        const cityNames = {
+            'atlanta': 'Atlanta',
+            'boston': 'Boston',
+            'dallas': 'Dallas',
+            'guadalajara': 'Guadalajara',
+            'houston': 'Houston',
+            'kansas-city': 'Kansas City',
+            'los-angeles': 'Los Angeles',
+            'mexico-city': 'Mexico City',
+            'miami': 'Miami',
+            'monterrey': 'Monterrey',
+            'new-york': 'New York/New Jersey',
+            'philadelphia': 'Philadelphia',
+            'san-francisco': 'San Francisco Bay Area',
+            'seattle': 'Seattle',
+            'toronto': 'Toronto',
+            'vancouver': 'Vancouver'
+        };
+
+        // Load the data
+        async function loadData() {
+            try {
+                const cityResponse = await fetch('team_city_probabilities.json?v=' + Date.now());
+                cityData = await cityResponse.json();
+
+                // Load team flags from teams.csv
+                const csvResponse = await fetch('teams.csv?v=' + Date.now());
+                const csvText = await csvResponse.text();
+                
+                // Parse CSV for flags
+                csvText.split('\n').forEach(line => {
+                    if (line.startsWith('#') || !line.trim()) return;
+                    const parts = line.split(',');
+                    if (parts.length >= 6) {
+                        const teamName = parts[0].trim();
+                        const flag = parts[5].trim();
+                        teamFlags[teamName] = flag;
+                        
+                        // Convert flag to country code for flagcdn
+                        const countryCode = countryCodeMap[flag] || flag.toLowerCase();
+                        flagCodeMap[teamName] = countryCode;
+                    }
+                });
+
+                // Populate city dropdown
+                const citySelect = document.getElementById('citySelect');
+                citySelect.innerHTML = '<option value="">-- Select a City --</option>';
+                
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = cityNames[city] || city;
+                    citySelect.appendChild(option);
+                });
+
+                citySelect.addEventListener('change', (e) => {
+                    if (e.target.value) {
+                        updateChart(e.target.value);
+                    }
+                });
+
+                // Load first city by default
+                citySelect.value = cities[0];
+                updateChart(cities[0]);
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.querySelector('.chart-container').innerHTML = 
+                    '<div class="error">Error loading data. Please refresh the page.</div>';
+            }
+        }
+
+        // Update chart for selected city
+        function updateChart(city) {
+            const cityDisplayName = cityNames[city] || city;
+            document.getElementById('chartTitle').textContent = 
+                `Teams Most Likely to Play in ${cityDisplayName}`;
+
+            // Extract probabilities for this city from all teams
+            const teamProbabilities = [];
+            for (const [team, cities] of Object.entries(cityData)) {
+                const prob = cities[city] || 0;
+                if (prob > 0) {
+                    teamProbabilities.push({ team, prob });
+                }
+            }
+
+            // Sort by probability (descending)
+            teamProbabilities.sort((a, b) => b.prob - a.prob);
+
+            const teams = teamProbabilities.map(t => t.team);
+            const probabilities = teamProbabilities.map(t => t.prob);
+
+            // Create empty labels - we'll only show flags
+            const teamLabels = teams.map(() => '');
+
+            // Preload flag images
+            const flagImages = {};
+            teams.forEach(team => {
+                const code = flagCodeMap[team];
+                if (code) {
+                    if (Array.isArray(code)) {
+                        // Multiple flags for playoff paths
+                        flagImages[team] = code.map(c => {
+                            const img = new Image();
+                            img.src = `https://flagcdn.com/24x18/${c}.png`;
+                            return img;
+                        });
+                    } else {
+                        // Single flag
+                        const img = new Image();
+                        img.src = `https://flagcdn.com/24x18/${code}.png`;
+                        flagImages[team] = [img];
+                    }
+                }
+            });
+            
+            // Plugin to draw flag images
+            const flagImagePlugin = {
+                id: 'flagImages',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const yAxis = chart.scales.y;
+                    
+                    teams.forEach((team, index) => {
+                        const imgs = flagImages[team];
+                        if (imgs && imgs.length > 0) {
+                            const y = yAxis.getPixelForValue(index);
+                            const totalWidth = imgs.length * 26 - 2;
+                            let xOffset = chart.chartArea.left - totalWidth - 5;
+                            
+                            // Draw all flags for this team
+                            imgs.forEach((img) => {
+                                if (img.complete) {
+                                    ctx.drawImage(img, xOffset, y - 9, 24, 18);
+                                    xOffset += 26;
+                                }
+                            });
+                        }
+                    });
+                }
+            };
+
+            // Create gradient colors based on probability
+            const maxProb = Math.max(...probabilities);
+            const minProb = Math.min(...probabilities);
+            const colors = probabilities.map(prob => {
+                const ratio = (prob - minProb) / (maxProb - minProb);
+                
+                // Blue gradient: light blue (low) to dark blue (high)
+                const r = Math.round(66 + (1 - ratio) * (100));
+                const g = Math.round(126 + (1 - ratio) * (80));
+                const b = Math.round(234 + (1 - ratio) * (20));
+                
+                return `rgba(${r}, ${g}, ${b}, 0.8)`;
+            });
+
+            // Destroy existing chart
+            if (teamChart) {
+                teamChart.destroy();
+            }
+
+            // Create new chart
+            const ctx = document.getElementById('teamChart').getContext('2d');
+            teamChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: teamLabels,
+                    datasets: [{
+                        label: 'Probability (%)',
+                        data: probabilities,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 2,
+                        borderRadius: 6,
+                    }]
+                },
+                plugins: [flagImagePlugin],
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    layout: {
+                        padding: {
+                            left: 110 // Space for up to 4 flag images
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return teams[context[0].dataIndex];
+                                },
+                                label: function(context) {
+                                    return `Probability: ${context.parsed.x.toFixed(2)}%`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            displayColors: false,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: Math.ceil(Math.max(...probabilities) / 10) * 10,
+                            title: {
+                                display: true,
+                                text: 'Probability of Playing at Least One Group Stage Match (%)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                autoSkip: false,
+                                maxRotation: 0,
+                                minRotation: 0
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 750,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            });
+        }
+
+        // Load data when page loads
+        loadData();
+    </script>
+</body>
+</html>
