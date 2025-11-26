@@ -177,9 +177,9 @@ def main():
     print(f"\nLoading FIFA statistics from {stats_file}...")
     fifa_stats = load_fifa_stats(stats_file)
     print(f"  Teams: {len(fifa_stats['teams'])}")
-    if 'total_runs' in fifa_stats:
+    if "total_runs" in fifa_stats:
         print(f"  Runs: {fifa_stats['total_runs']:,}")
-    elif 'successes' in fifa_stats:
+    elif "successes" in fifa_stats:
         print(f"  Successful draws: {fifa_stats['successes']:,}")
 
     # Build city probability map
