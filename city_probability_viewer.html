@@ -249,7 +249,7 @@
                 });
                 
                 // Load team candidates and flags from teams.csv
-                const csvResponse = await fetch('teams.csv');
+                const csvResponse = await fetch('teams.csv?v=' + Date.now());
                 const csvText = await csvResponse.text();
                 
                 // Parse CSV for candidates and flags
