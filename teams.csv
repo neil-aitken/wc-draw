@@ -42,23 +42,23 @@ New Zealand,OFC,4,false,,🇳🇿,,86,false
 Austria,UEFA,2,false,,🇦🇹,,24,true
 Belgium,UEFA,1,false,,🇧🇪,,8,true
 Croatia,UEFA,2,false,,🇭🇷,,10,true
-England,UEFA,1,false,,\U0001F3F4\U000E0067\U000E0062\U000E0065\U000E006E\U000E0067\U000E007F,,4,true
+England,UEFA,1,false,,EN,,4,true
 France,UEFA,1,false,,🇫🇷,,3,true
 Germany,UEFA,1,false,,🇩🇪,,9,true
 Netherlands,UEFA,1,false,,🇳🇱,,7,true
 Norway,UEFA,3,false,,🇳🇴,,29,true
 Portugal,UEFA,1,false,,🇵🇹,,6,true
-Scotland,UEFA,3,false,,\U0001F3F4\U000E0067\U000E0062\U000E0073\U000E0063\U000E0074\U000E007F,,36,true
+Scotland,UEFA,3,false,,SC,,36,true
 Spain,UEFA,1,false,,🇪🇸,,1,true
 Switzerland,UEFA,2,false,,🇨🇭,,17,true
 
 # candidates for playoff paths (semicolon-separated in CSV 'candidates' column)
 # Playoff paths use highest FIFA ranking from their candidates
-UEFA Playoff A,UEFA,4,false,,\U0001F3F4\U000E0067\U000E0062\U000E0077\U000E006C\U000E0073\U000E007F🇧🇦🇮🇹NI,Wales;Bosnia;Italy;Northern Ireland,12,false
-UEFA Playoff B,UEFA,4,false,,🇺🇦🇸🇪🇵🇱🇦🇱,Ukraine;Sweden;Poland;Albania,28,false
-UEFA Playoff C,UEFA,4,false,,🇸🇰🇽🇰🇹🇷🇷🇴,Slovakia;Kosovo;Turkey;Romania,25,false
-UEFA Playoff D,UEFA,4,false,,🇨🇿🇮🇪🇩🇰🇲🇰,Czechia;Ireland;Denmark;Macedonia,21,false
+UEFA Playoff A,UEFA,4,false,,WL/BA/IT/NI,Wales;Bosnia;Italy;Northern Ireland,12,false
+UEFA Playoff B,UEFA,4,false,,UA/SE/PL/AL,Ukraine;Sweden;Poland;Albania,28,false
+UEFA Playoff C,UEFA,4,false,,SK/XK/TR/RO,Slovakia;Kosovo;Turkey;Romania,25,false
+UEFA Playoff D,UEFA,4,false,,CZ/IE/DK/MK,Czechia;Ireland;Denmark;Macedonia,21,false
 
 # Inter-confederation playoff paths
-Inter Path 1,CAF|OFC|CONCACAF,4,false,,🇨🇩🇳🇨🇯🇲,DR Congo;New Caledonia;Jamaica,56,false
-Inter Path 2,AFC|CONMEBOL|CONCACAF,4,false,,🇮🇶🇧🇴🇸🇷,Iraq;Bolivia;Suriname,58,false
+Inter Path 1,CAF|OFC|CONCACAF,4,false,,CD/NC/JM,DR Congo;New Caledonia;Jamaica,56,false
+Inter Path 2,AFC|CONMEBOL|CONCACAF,4,false,,IQ/BO/SR,Iraq;Bolivia;Suriname,58,false
