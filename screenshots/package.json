@@ -1,0 +1,14 @@
+{
+  "name": "wc-draw-screenshots",
+  "version": "1.0.0",
+  "description": "Automated screenshot capture for World Cup draw visualizations",
+  "scripts": {
+    "capture:cities": "node capture_city_views.js",
+    "capture:teams": "node capture_team_views.js",
+    "capture:all": "npm run capture:cities && npm run capture:teams"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "csv-parse": "^5.5.3"
+  }
+}
