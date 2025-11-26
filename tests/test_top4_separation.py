@@ -238,9 +238,9 @@ class TestSeeds34Separation:
         for france_q, england_q in valid_pairs:
             france_half = get_half_for_quadrant(france_q)
             england_half = get_half_for_quadrant(england_q)
-            assert (
-                france_half != england_half
-            ), f"France in {france_q} and England in {england_q} should be opposite halves"
+            assert france_half != england_half, (
+                f"France in {france_q} and England in {england_q} should be opposite halves"
+            )
 
     def test_france_england_same_half_invalid(self):
         """Verify that France and England in same half is invalid."""
@@ -256,9 +256,9 @@ class TestSeeds34Separation:
         for france_q, england_q in invalid_pairs:
             france_half = get_half_for_quadrant(france_q)
             england_half = get_half_for_quadrant(england_q)
-            assert (
-                france_half == england_half
-            ), f"France in {france_q} and England in {england_q} are both in {france_half}"
+            assert france_half == england_half, (
+                f"France in {france_q} and England in {england_q} are both in {france_half}"
+            )
 
 
 class TestTop4QuadrantSeparationScenarios:

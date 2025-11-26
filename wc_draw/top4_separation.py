@@ -258,9 +258,7 @@ class Top4BracketTracker:
 
         # Check seeds 3-4 in opposite halves
         seeds34_names = [t.name for t in self.top4_teams[2:4]]
-        seeds34_quadrants = [
-            placed_top4.get(name) for name in seeds34_names if name in placed_top4
-        ]
+        seeds34_quadrants = [placed_top4.get(name) for name in seeds34_names if name in placed_top4]
 
         if len(seeds34_quadrants) == 2:
             half1 = get_half_for_quadrant(seeds34_quadrants[0])

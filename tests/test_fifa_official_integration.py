@@ -95,9 +95,9 @@ class TestFIFAOfficialConstraints:
 
             spain = placements[1]  # Rank 1
             argentina = placements[2]  # Rank 2
-            assert (
-                spain["half"] != argentina["half"]
-            ), f"Seed {seed_val}: Top 2 not in opposite halves"
+            assert spain["half"] != argentina["half"], (
+                f"Seed {seed_val}: Top 2 not in opposite halves"
+            )
 
     def test_without_official_flag_no_top4_separation(self):
         """Verify that without fifa_official_constraints, no top 4 separation is enforced."""
