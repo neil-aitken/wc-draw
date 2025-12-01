@@ -29,6 +29,7 @@ class DrawConfig:
     uefa_group_winners_separated: bool = False
     uefa_playoffs_seeded: bool = False
     fifa_official_constraints: bool = False
+    use_csv_pots: bool = True  # Use pot assignments directly from CSV (no dynamic sorting)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert config to dictionary for serialization."""
@@ -48,6 +49,8 @@ class DrawConfig:
             features.append("UEFA playoffs seeded")
         if self.fifa_official_constraints:
             features.append("FIFA official constraints")
+        if not self.use_csv_pots:
+            features.append("dynamic pot assignment")
 
         if not features:
             return "DrawConfig(default - all features off)"

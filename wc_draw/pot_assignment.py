@@ -7,25 +7,23 @@ from wc_draw.parser import Team
 
 def assign_pots(teams_by_pot: Dict[int, List[Team]], config: DrawConfig) -> Dict[int, List[Team]]:
     """
-    Dynamically assign teams to pots based on FIFA rankings and configuration.
+    Assign teams to pots.
 
     Args:
-        teams_by_pot: Teams organized by their default pot assignment
+        teams_by_pot: Teams organized by their default pot assignment (from CSV)
         config: Draw configuration with feature toggles
 
     Returns:
-        Teams reorganized into pots based on FIFA rankings
+        Teams organized by pot
 
-    Algorithm:
-    1. Hosts always go to Pot 1 (in alphabetical order)
-    2. All non-host teams are sorted by FIFA ranking
-    3. If uefa_playoffs_seeded=False: playoff paths forced to Pot 4
-    4. If uefa_playoffs_seeded=True: playoff paths sorted by highest candidate ranking
-    5. Top (12 - num_hosts) teams → Pot 1
-    6. Next 12 teams → Pot 2
-    7. Next 12 teams → Pot 3
-    8. Remaining teams → Pot 4
+    If config.use_csv_pots=True (default): Returns the input unchanged,
+    using the pot assignments directly from the CSV file.
+
+    If config.use_csv_pots=False: Dynamically assigns teams based on FIFA rankings.
     """
+    # Default: use pot assignments directly from CSV
+    if config.use_csv_pots:
+        return teams_by_pot
     # Flatten all teams
     all_teams = []
     for teams_list in teams_by_pot.values():
@@ -36,8 +34,15 @@ def assign_pots(teams_by_pot: Dict[int, List[Team]], config: DrawConfig) -> Dict
     non_hosts = [t for t in all_teams if not t.host]
 
     # Handle playoff paths based on configuration
-    playoff_paths = [t for t in non_hosts if t.name.startswith("UEFA Playoff")]
-    non_playoff_teams = [t for t in non_hosts if not t.name.startswith("UEFA Playoff")]
+    # Both UEFA Playoff and Inter Path teams are playoff qualifiers
+    playoff_paths = [
+        t for t in non_hosts if t.name.startswith("UEFA Playoff") or t.name.startswith("Inter Path")
+    ]
+    non_playoff_teams = [
+        t
+        for t in non_hosts
+        if not (t.name.startswith("UEFA Playoff") or t.name.startswith("Inter Path"))
+    ]
 
     if not config.uefa_playoffs_seeded:
         # Playoff paths forced to Pot 4, sort others by ranking

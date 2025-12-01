@@ -94,3 +94,6 @@
 127.0.0.1 - - [26/Nov/2025 18:59:13] "GET /draw_stats.json?v=1764183552992 HTTP/1.1" 200 -
 127.0.0.1 - - [26/Nov/2025 18:59:13] "GET /team_city_probabilities.json?v=1764183553240 HTTP/1.1" 200 -
 127.0.0.1 - - [26/Nov/2025 18:59:13] "GET /teams.csv?v=1764183553535 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Nov/2025 00:34:10] "GET /city_viewer.html HTTP/1.1" 200 -
+127.0.0.1 - - [27/Nov/2025 00:34:10] "GET /team_city_probabilities.json?v=1764203650015 HTTP/1.1" 200 -
+127.0.0.1 - - [27/Nov/2025 00:34:10] "GET /teams.csv?v=1764203650446 HTTP/1.1" 200 -

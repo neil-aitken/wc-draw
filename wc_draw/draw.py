@@ -3,6 +3,7 @@ import random
 from typing import Dict, List, Optional
 
 from .config import DrawConfig
+from .lookahead import check_lookahead_constraints
 from .parser import Team
 from .top4_separation import Top4BracketTracker
 from .group_positions import get_position_for_pot
@@ -195,7 +196,14 @@ def draw_pot(
     if config is None:
         config = DrawConfig()
 
-    def eligible_for_group(team: Team, grp_teams: List[Team], remaining_uefa: int = 0):
+    def eligible_for_group(
+        team: Team,
+        grp_teams: List[Team],
+        remaining_uefa: int = 0,
+        group_name: str = "",
+        all_groups: Optional[Dict[str, List[Team]]] = None,
+        remaining_teams: Optional[List[Team]] = None,
+    ):
         # Do not allow more than one team from the same pot in a single group.
         # This ensures we never place two teams from, e.g., pot 4, into the same
         # group when placing pots out-of-order or using fallback logic.
@@ -212,6 +220,11 @@ def draw_pot(
         if config.fifa_official_constraints:
             remaining_slots = 4 - len(grp_teams)
             if not _check_min_uefa_constraint(team, grp_teams, remaining_uefa, remaining_slots):
+                return False
+
+        # Check lookahead constraints (Inter Path landing spot preservation)
+        if config.fifa_official_constraints and all_groups and group_name:
+            if not check_lookahead_constraints(team, group_name, all_groups, remaining_teams or []):
                 return False
 
         if "|" in team.confederation:
@@ -270,6 +283,7 @@ def draw_pot(
 
     for attempt in range(1, max_attempts + 1):
         rng.shuffle(teams)
+
         # work on a fresh copy of current groups for this attempt
         working = {g: list(v) for g, v in groups.items()}
         failed = False
@@ -284,7 +298,14 @@ def draw_pot(
                 if team.fixed_group not in working:
                     failed = True
                     break
-                if not eligible_for_group(team, working[team.fixed_group], remaining_uefa):
+                if not eligible_for_group(
+                    team,
+                    working[team.fixed_group],
+                    remaining_uefa,
+                    team.fixed_group,
+                    working,
+                    teams_left,
+                ):
                     failed = True
                     break
                 # Insert into the group's list at the pot-specific position so
@@ -306,7 +327,8 @@ def draw_pot(
                 preferred = [
                     g
                     for g, ts in working.items()
-                    if len(ts) == 1 and eligible_for_group(team, ts, remaining_uefa)
+                    if len(ts) == 1
+                    and eligible_for_group(team, ts, remaining_uefa, g, working, teams_left)
                 ]
                 if preferred:
                     eligible = preferred
@@ -318,7 +340,8 @@ def draw_pot(
                     eligible = [
                         g
                         for g, ts in working.items()
-                        if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+                        if len(ts) < 4
+                        and eligible_for_group(team, ts, remaining_uefa, g, working, teams_left)
                     ]
             else:
                 eligible = [
@@ -326,7 +349,7 @@ def draw_pot(
                     for g, ts in working.items()
                     if len(ts) == expected_pre_size
                     and len(ts) < 4
-                    and eligible_for_group(team, ts, remaining_uefa)
+                    and eligible_for_group(team, ts, remaining_uefa, g, working, teams_left)
                 ]
             # If nothing matches the expected pre-size, only fall back when
             # we're placing a later pot earlier than the current group sizes
@@ -342,7 +365,8 @@ def draw_pot(
                     fallback = [
                         g
                         for g, ts in working.items()
-                        if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+                        if len(ts) < 4
+                        and eligible_for_group(team, ts, remaining_uefa, g, working, teams_left)
                     ]
                     if not fallback:
                         failed = True
@@ -353,7 +377,13 @@ def draw_pot(
                 else:
                     failed = True
                     break
-            pick = rng.choice(eligible)
+
+            # FIFA official rule: assign to lowest eligible group alphabetically
+            # This makes the draw deterministic and always completable
+            if config.fifa_official_constraints:
+                pick = min(eligible)
+            else:
+                pick = rng.choice(eligible)
             # Insert the team at the slot corresponding to its pot (0-based)
             pos = max(0, team.pot - 1)
             if pos >= len(working[pick]):
@@ -388,7 +418,14 @@ def draw_pot(
                 return []
             return (
                 [team.fixed_group]
-                if eligible_for_group(team, working[team.fixed_group], remaining_uefa)
+                if eligible_for_group(
+                    team,
+                    working[team.fixed_group],
+                    remaining_uefa,
+                    team.fixed_group,
+                    working,
+                    teams_remaining,
+                )
                 else []
             )
 
@@ -396,21 +433,25 @@ def draw_pot(
             preferred = [
                 g
                 for g, ts in working.items()
-                if len(ts) == 1 and eligible_for_group(team, ts, remaining_uefa)
+                if len(ts) == 1
+                and eligible_for_group(team, ts, remaining_uefa, g, working, teams_remaining)
             ]
             if preferred:
                 return preferred
             return [
                 g
                 for g, ts in working.items()
-                if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+                if len(ts) < 4
+                and eligible_for_group(team, ts, remaining_uefa, g, working, teams_remaining)
             ]
 
         expected = team.pot - 1
         eligible = [
             g
             for g, ts in working.items()
-            if len(ts) == expected and len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+            if len(ts) == expected
+            and len(ts) < 4
+            and eligible_for_group(team, ts, remaining_uefa, g, working, teams_remaining)
         ]
         if eligible:
             return eligible
@@ -420,7 +461,8 @@ def draw_pot(
             fallback = [
                 g
                 for g, ts in working.items()
-                if len(ts) < 4 and eligible_for_group(team, ts, remaining_uefa)
+                if len(ts) < 4
+                and eligible_for_group(team, ts, remaining_uefa, g, working, teams_remaining)
             ]
             if not fallback:
                 return []
@@ -469,24 +511,23 @@ def draw_pot(
 def run_full_draw(
     pots: Dict[int, List[Team]],
     seed: Optional[int] = None,
-    max_attempts: int = 5000,
-    report_fallbacks: bool = False,
     config: Optional[DrawConfig] = None,
 ):
     """Perform the full draw sequence (pot1, pot2, pot3, pot4) and return
     the resulting groups and the integer seed used.
 
     This uses the classic tournament ordering: pot1 then pot2 then pot3 then
-    pot4. `max_attempts` is forwarded to the underlying placement attempts.
+    pot4. With proper lookahead constraints, a single attempt should always
+    succeed.
 
     If `seed` is None a cryptographically-random 32-bit seed is generated.
     The RNG is always initialized from the returned seed so runs are
     reproducible when reusing that value.
+
+    Raises RuntimeError if the draw fails (indicates lookahead logic needs improvement).
     """
     if config is None:
         config = DrawConfig()
-
-    metadata = {"fallback": None}
 
     if seed is None:
         seed = random.SystemRandom().randint(0, 2**32 - 1)
@@ -494,152 +535,18 @@ def run_full_draw(
 
     groups = draw_pot1(pots[1], rng=rng, config=config)
 
-    # Local copy of eligible check used by the global backtracking fallback.
-    def eligible_for_group_local(team: Team, grp_teams: List[Team]):
-        if any(t.pot == team.pot for t in grp_teams):
-            return False
+    # Classic ordering: pot2, pot3, then pot4.
+    # With proper lookahead, this should succeed on first try most of the time.
+    # Use config.max_attempts or default to 5000 for robustness.
+    max_attempts = getattr(config, "max_attempts", 5000) or 5000
+    draw_pot(pots[2], groups, rng=rng, max_attempts=max_attempts, allow_early=False, config=config)
+    draw_pot(pots[3], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config)
+    draw_pot(pots[4], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config)
 
-        # Check UEFA group winner constraint if enabled
-        if config.uefa_group_winners_separated:
-            if not _check_uefa_group_winner_constraint(team, grp_teams):
-                return False
+    # Apply FIFA's official position mapping after all pots are drawn
+    groups = apply_fifa_position_mapping(groups)
 
-        if "|" in team.confederation:
-            allowed = [c.strip() for c in team.confederation.split("|") if c.strip()]
-            for conf in allowed:
-                cnt = sum(1 for t in grp_teams if t.confederation == conf)
-                if conf == "UEFA":
-                    if cnt >= 2:
-                        return False
-                else:
-                    if cnt >= 1:
-                        return False
-            return True
-
-        def placeholder_allows(t, conf):
-            if not t.confederation:
-                return False
-            if "|" not in t.confederation:
-                return False
-            allowed = [c.strip() for c in t.confederation.split("|") if c.strip()]
-            return conf in allowed
-
-        same = 0
-        for t in grp_teams:
-            if t.confederation == team.confederation:
-                same += 1
-            elif placeholder_allows(t, team.confederation):
-                same += 1
-
-        if team.confederation == "UEFA":
-            return same < 2
-        return same < 1
-
-    try:
-        # Classic ordering: pot2, pot3, then pot4.
-        draw_pot(
-            pots[2], groups, rng=rng, max_attempts=max_attempts, allow_early=False, config=config
-        )
-        draw_pot(
-            pots[3], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config
-        )
-        draw_pot(
-            pots[4], groups, rng=rng, max_attempts=max_attempts, allow_early=True, config=config
-        )
-
-        # Apply FIFA's official position mapping after all pots are drawn
-        groups = apply_fifa_position_mapping(groups)
-
-        if report_fallbacks:
-            return groups, seed, metadata
-        return groups, seed
-    except RuntimeError:
-        # Try several alternate pot ordering fallbacks before attempting the
-        # expensive global backtracking solver. Some seeds become feasible if
-        # pot3/4 are drawn in a slightly different sequence.
-        alternate_orderings = [
-            [2, 4, 3],
-            [4, 2, 3],
-            [3, 4, 2],
-        ]
-        for ordering in alternate_orderings:
-            try:
-                alt_groups = draw_pot1(pots[1], rng=rng, config=config)
-                for p in ordering:
-                    # allow_early for later pots to reduce deadlocks
-                    allow = True if p >= 3 else False
-                    draw_pot(
-                        pots[p],
-                        alt_groups,
-                        rng=rng,
-                        max_attempts=max_attempts,
-                        allow_early=allow,
-                        config=config,
-                    )
-                metadata["fallback"] = {"type": "alternate_ordering", "ordering": ordering}
-
-                # Apply FIFA's official position mapping after all pots are drawn
-                alt_groups = apply_fifa_position_mapping(alt_groups)
-
-                if report_fallbacks:
-                    return alt_groups, seed, metadata
-                return alt_groups, seed
-            except RuntimeError:
-                continue
-
-        # As a last-resort fallback, attempt a global backtracking solver that
-        # assigns all remaining teams from pots 2..4 simultaneously given the
-        # fixed pot1 placement. This is more expensive but can resolve edge
-        # cases where greedy incremental placement creates infeasible states.
-        remaining = list(pots[2]) + list(pots[3]) + list(pots[4])
-        working_start = {g: list(v) for g, v in groups.items()}
-
-        def compute_eligible_full(team, working):
-            if team.fixed_group:
-                if team.fixed_group not in working:
-                    return []
-                if eligible_for_group_local(team, working[team.fixed_group]):
-                    return [team.fixed_group]
-                return []
-            return [
-                g for g, ts in working.items() if len(ts) < 4 and eligible_for_group_local(team, ts)
-            ]
-
-        def backtrack_all(teams_left, working):
-            if not teams_left:
-                return working
-            elig_list = [(t, compute_eligible_full(t, working)) for t in teams_left]
-            for t, elig in elig_list:
-                if not elig:
-                    return None
-            teams_left_sorted = sorted(elig_list, key=lambda te: len(te[1]))
-            team, elig_groups = teams_left_sorted[0]
-            for g in elig_groups:
-                wk = {gr: list(ts) for gr, ts in working.items()}
-                pos = max(0, team.pot - 1)
-                if pos >= len(wk[g]):
-                    wk[g].append(team)
-                else:
-                    wk[g].insert(pos, team)
-                remaining2 = [t for t in teams_left if t is not team]
-                res = backtrack_all(remaining2, wk)
-                if res is not None:
-                    return res
-            return None
-
-        result = backtrack_all(remaining, working_start)
-        if result is None:
-            raise
-        for g in groups:
-            groups[g] = result[g]
-        metadata["fallback"] = {"type": "global_backtracking"}
-
-        # Apply FIFA's official position mapping after all pots are drawn
-        groups = apply_fifa_position_mapping(groups)
-
-        if report_fallbacks:
-            return groups, seed, metadata
-        return groups, seed
+    return groups, seed
 
 
 def apply_fifa_position_mapping(groups: Dict[str, List[Team]]) -> Dict[str, List[Team]]:

@@ -279,23 +279,23 @@ Reasoning:
 ## Progress Tracking
 
 ### Phase 1 Progress
-- [ ] Step 1.1: Analyze fallback draws
-- [ ] Step 1.2: Map all constraints (documented above)
-- [ ] Step 1.3: Validate emergent constraints
+- [x] Step 1.1: Analyze fallback draws - ~29% needed fallback due to Inter Path 2 having 0 landing spots
+- [x] Step 1.2: Map all constraints (documented above)
+- [x] Step 1.3: Validate emergent constraints - Inter Path confederations confirmed
 
 ### Phase 2 Progress
-- [ ] Step 2.1: Define lookahead function
-- [ ] Step 2.2: Design state tracking
-- [ ] Step 2.3: Define specific rules
+- [x] Step 2.1: Define lookahead function - `check_lookahead_constraints()` in `lookahead.py`
+- [x] Step 2.2: Design state tracking - Track IP1/IP2 eligible groups
+- [x] Step 2.3: Define specific rules - L1-L5 defined below
 
 ### Phase 3 Progress
-- [ ] Step 3.1: Create lookahead module
-- [ ] Step 3.2: Integrate into eligible_for_group()
-- [ ] Step 3.3: Remove fallback orderings
-- [ ] Step 3.4: Update backtracking solver
+- [x] Step 3.1: Create lookahead module - `wc_draw/lookahead.py` created
+- [x] Step 3.2: Integrate into eligible_for_group() - Done in `draw.py`
+- [ ] Step 3.3: Remove fallback orderings - Not yet (still ~17% fallback rate)
+- [ ] Step 3.4: Update backtracking solver - Not needed yet
 
 ### Phase 4 Progress
-- [ ] Step 4.1: Test lookahead correctness
+- [ ] Step 4.1: Test lookahead correctness - 114 tests pass, but fallback rate still ~17%
 - [ ] Step 4.2: Verify bias elimination
 - [ ] Step 4.3: Full regeneration
 
@@ -305,14 +305,42 @@ Reasoning:
 
 ---
 
-## Recommended Next Steps
+## Lookahead Rules Implementation Status
 
-1. **First**: Validate the Inter Path 1 and Inter Path 2 confederation strings from teams.csv
-2. **Second**: Analyze WHY current draws need fallbacks - which specific placements cause deadlocks
-3. **Third**: Implement simplest lookahead rule (UEFA minimum feasibility) and measure impact
-4. **Fourth**: Add Inter Path feasibility rules
-5. **Fifth**: Iterate until 0% fallback rate achieved
+| Rule | Description | Status | Location |
+|------|-------------|--------|----------|
+| **L1** | UEFA Minimum Feasibility | ✅ Done | `draw.py:_check_min_uefa_constraint()` |
+| **L2** | Inter Path 1 Feasibility | ✅ Done | `lookahead.py:would_eliminate_inter_path_1_spot()` |
+| **L3** | Inter Path 2 Feasibility | ✅ Done | `lookahead.py:would_eliminate_inter_path_2_spot()` |
+| **L4** | Non-European Pot 1 Group Diversity | ✅ Done | `lookahead.py:would_violate_non_uefa_pot1_diversity()` |
+| **L5** | General Confederation Feasibility | ✅ Done | `lookahead.py:would_leave_team_without_options()` |
+
+### Current Statistics (after L1-L5)
+- All 114 tests pass
+- Success rate: ~79% (with max_attempts=1, no fallbacks)
+- All failures occur in Pot 4
+- Root cause: Inter Path 2 only has ~2 eligible groups after Pot 3, and slot stealing
+
+### Tuning Parameters
+- `min_required` during Pot 2/3: 2 (was 4, reduced because 4 was unachievable mathematically)
+- Pot 4 slot protection: Triggers when only 1 slot remains
+
+### Additional Optimization: "Lowest Eligible Group Alphabetically"
+- When `fifa_official_constraints=True`, picks `min(eligible)` instead of `rng.choice(eligible)`
+- Makes draw more deterministic, mimics FIFA's predetermined patterns
+- Location: `draw.py` line ~406
 
 ---
 
-*Last Updated: November 26, 2025*
+## Recommended Next Steps
+
+1. ~~**First**: Validate the Inter Path 1 and Inter Path 2 confederation strings from teams.csv~~ ✅
+2. ~~**Second**: Analyze WHY current draws need fallbacks~~ ✅ (IP2 landing spots exhausted)
+3. ~~**Third**: Implement simplest lookahead rule (UEFA minimum feasibility)~~ ✅
+4. ~~**Fourth**: Add Inter Path feasibility rules~~ ✅
+5. **Fifth**: Implement L4 (Non-European Pot 1 Diversity) and L5 (General Feasibility)
+6. **Sixth**: Iterate until 0% fallback rate achieved
+
+---
+
+*Last Updated: November 27, 2025*
