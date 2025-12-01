@@ -192,9 +192,7 @@ async def capture_team_views(base_url: str = "http://localhost:8080"):
 
 async def main():
     """Main function to capture all screenshots."""
-    parser = argparse.ArgumentParser(
-        description="Capture screenshots for World Cup draw visualizations"
-    )
+    parser = argparse.ArgumentParser(description="Capture screenshots for World Cup draw visualizations")
     parser.add_argument(
         "--cities-only",
         action="store_true",

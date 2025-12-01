@@ -84,9 +84,7 @@ GROUP_POSITION_TO_POT: Dict[tuple[str, int], int] = {
 
 # Reverse mapping: (group, pot) -> position
 # This is what we need when placing teams from a specific pot into groups
-POT_TO_GROUP_POSITION: Dict[tuple[str, int], int] = {
-    (grp, pot): pos for (grp, pos), pot in GROUP_POSITION_TO_POT.items()
-}
+POT_TO_GROUP_POSITION: Dict[tuple[str, int], int] = {(grp, pot): pos for (grp, pos), pot in GROUP_POSITION_TO_POT.items()}
 
 
 def get_position_for_pot(group: str, pot: int) -> int:

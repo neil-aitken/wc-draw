@@ -87,9 +87,7 @@ def parse_group_stage_details(filepath: str | Path = "group-stage-details") -> d
                             # Extract position labels if present (e.g., "A3", "B2")
                             # For hosts, convert "Mexico", "Canada", "United States" to position 1
                             parts = [p.strip() for p in line.split("\t") if p.strip()]
-                            position1 = (
-                                parts[0] if len(parts) > 0 and "Match" not in parts[0] else ""
-                            )
+                            position1 = parts[0] if len(parts) > 0 and "Match" not in parts[0] else ""
                             position2 = parts[2] if len(parts) > 2 else ""
 
                             # Normalize host names to position labels
@@ -113,9 +111,7 @@ def parse_group_stage_details(filepath: str | Path = "group-stage-details") -> d
     return group_data
 
 
-def calculate_position_city_probabilities(
-    group: str, position: int, group_data: dict
-) -> dict[str, float]:
+def calculate_position_city_probabilities(group: str, position: int, group_data: dict) -> dict[str, float]:
     """
     Calculate probability of playing in each city for a given position in a group.
 

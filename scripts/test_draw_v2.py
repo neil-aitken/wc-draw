@@ -41,9 +41,7 @@ def run_single_draw(seed: int, pots: dict, lookahead_config: LookaheadConfig) ->
         # Validate the draw for quadrant violations
         violations = validate_draw(result)
         quadrant_violations = sum(1 for v in violations if "separation" in v.lower())
-        return DrawResult(
-            seed=seed, success=True, time_ms=elapsed, quadrant_violations=quadrant_violations
-        )
+        return DrawResult(seed=seed, success=True, time_ms=elapsed, quadrant_violations=quadrant_violations)
     except RuntimeError as e:
         elapsed = (time.time() - start) * 1000
         return DrawResult(seed=seed, success=False, time_ms=elapsed, error=str(e))
@@ -81,10 +79,7 @@ def run_test(num_seeds: int = 100, lookahead_config: LookaheadConfig = None, num
 
     with ProcessPoolExecutor(max_workers=num_threads) as executor:
         # Submit all draws
-        futures = {
-            executor.submit(run_single_draw, seed, pots, lookahead_config): seed
-            for seed in range(num_seeds)
-        }
+        futures = {executor.submit(run_single_draw, seed, pots, lookahead_config): seed for seed in range(num_seeds)}
 
         completed = 0
         for future in as_completed(futures):
@@ -114,10 +109,7 @@ def run_test(num_seeds: int = 100, lookahead_config: LookaheadConfig = None, num
     print(f"Results: {success_count}/{num_seeds} = {success_count / num_seeds * 100:.1f}%")
     if quadrant_violation_count > 0:
         valid_draws = success_count - quadrant_violation_count
-        print(
-            f"Quadrant valid: {valid_draws}/{success_count} = "
-            f"{valid_draws / success_count * 100:.1f}% of successful draws"
-        )
+        print(f"Quadrant valid: {valid_draws}/{success_count} = {valid_draws / success_count * 100:.1f}% of successful draws")
     print(f"Wall time: {total_time:.2f}s")
     print(f"Avg draw time: {avg_time:.1f}ms")
     print(f"Total CPU time: {total_draw_time / 1000:.2f}s")
@@ -173,18 +165,10 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Test draw_v2 performance")
-    parser.add_argument(
-        "-n", "--num-seeds", type=int, default=100, help="Number of seeds to test (default: 100)"
-    )
-    parser.add_argument(
-        "-t", "--threads", type=int, default=8, help="Number of parallel threads (default: 8)"
-    )
-    parser.add_argument(
-        "-s", "--seed", type=int, default=None, help="Test a specific seed with verbose output"
-    )
-    parser.add_argument(
-        "--no-lookahead", action="store_true", help="Disable all lookahead constraints"
-    )
+    parser.add_argument("-n", "--num-seeds", type=int, default=100, help="Number of seeds to test (default: 100)")
+    parser.add_argument("-t", "--threads", type=int, default=8, help="Number of parallel threads (default: 8)")
+    parser.add_argument("-s", "--seed", type=int, default=None, help="Test a specific seed with verbose output")
+    parser.add_argument("--no-lookahead", action="store_true", help="Disable all lookahead constraints")
     parser.add_argument("--l1", action="store_true", help="Enable L1 UEFA minimum")
     parser.add_argument("--l2", action="store_true", help="Enable L2 Inter Path 1")
     parser.add_argument("--l3", action="store_true", help="Enable L3 Inter Path 2")

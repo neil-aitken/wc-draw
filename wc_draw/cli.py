@@ -6,7 +6,7 @@ from typing import Iterable
 from .config import DrawConfig
 from .parser import parse_teams_config, parse_slots_config
 from .pot_assignment import assign_pots
-from .draw import run_full_draw
+from .draw_v2 import run_draw, LookaheadConfig
 
 
 def format_pots(pots: dict, slots_map: dict | None = None) -> str:
@@ -126,8 +126,15 @@ def main(argv=None):
     print(format_pots(pots, slots_map))
 
     if args.draw:
-        # Delegate draw orchestration (seed creation + pot order) to draw module.
-        groups, used_seed = run_full_draw(pots, seed=args.seed, config=config)
+        # Use draw_v2 with lookahead constraints
+        lookahead = LookaheadConfig(
+            l3_inter_path_2=True,
+            l6_pot4_caf_landing=True,
+            l7_uefa_slots=True,
+            l8_concacaf_slots=True,
+            l9_caf_slots=True,
+        )
+        groups, used_seed = run_draw(pots, seed=args.seed, lookahead=lookahead)
         print(f"Seed: {used_seed}")
 
         def fmt_team(t):

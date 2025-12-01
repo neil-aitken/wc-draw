@@ -114,9 +114,7 @@ def display_draw(groups: Dict[str, List[str]], confeds: Dict[str, str], verbose:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Validate a specific seed from FIFA official draw simulation"
-    )
+    parser = argparse.ArgumentParser(description="Validate a specific seed from FIFA official draw simulation")
     parser.add_argument("seed", type=int, help="Seed number to validate")
     parser.add_argument(
         "jsonl_file",
@@ -124,9 +122,7 @@ def main():
         default="seed_scan_fifa_official.jsonl",
         help="Path to JSONL file (default: seed_scan_fifa_official.jsonl)",
     )
-    parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Show detailed group information"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Show detailed group information")
     parser.add_argument(
         "--csv",
         default="teams.csv",

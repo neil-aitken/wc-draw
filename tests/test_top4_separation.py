@@ -197,9 +197,7 @@ class TestSeeds34Separation:
         france_quadrant = "blue"  # Half1
         france_half = get_half_for_quadrant(france_quadrant)
 
-        valid_quadrants_for_england = [
-            q for q in QUADRANTS.keys() if get_half_for_quadrant(q) != france_half
-        ]
+        valid_quadrants_for_england = [q for q in QUADRANTS.keys() if get_half_for_quadrant(q) != france_half]
 
         assert "green" in valid_quadrants_for_england
         assert "red" in valid_quadrants_for_england
@@ -211,9 +209,7 @@ class TestSeeds34Separation:
         england_quadrant = "red"  # Half2
         england_half = get_half_for_quadrant(england_quadrant)
 
-        valid_quadrants_for_france = [
-            q for q in QUADRANTS.keys() if get_half_for_quadrant(q) != england_half
-        ]
+        valid_quadrants_for_france = [q for q in QUADRANTS.keys() if get_half_for_quadrant(q) != england_half]
 
         assert "blue" in valid_quadrants_for_france
         assert "turquoise" in valid_quadrants_for_france
@@ -238,9 +234,7 @@ class TestSeeds34Separation:
         for france_q, england_q in valid_pairs:
             france_half = get_half_for_quadrant(france_q)
             england_half = get_half_for_quadrant(england_q)
-            assert france_half != england_half, (
-                f"France in {france_q} and England in {england_q} should be opposite halves"
-            )
+            assert france_half != england_half, f"France in {france_q} and England in {england_q} should be opposite halves"
 
     def test_france_england_same_half_invalid(self):
         """Verify that France and England in same half is invalid."""
@@ -256,9 +250,7 @@ class TestSeeds34Separation:
         for france_q, england_q in invalid_pairs:
             france_half = get_half_for_quadrant(france_q)
             england_half = get_half_for_quadrant(england_q)
-            assert france_half == england_half, (
-                f"France in {france_q} and England in {england_q} are both in {france_half}"
-            )
+            assert france_half == england_half, f"France in {france_q} and England in {england_q} are both in {france_half}"
 
 
 class TestTop4QuadrantSeparationScenarios:
@@ -282,9 +274,7 @@ class TestTop4QuadrantSeparationScenarios:
         spain_quadrant = "blue"
         argentina_quadrant = "green"
 
-        remaining_quadrants = [
-            q for q in QUADRANTS.keys() if q not in [spain_quadrant, argentina_quadrant]
-        ]
+        remaining_quadrants = [q for q in QUADRANTS.keys() if q not in [spain_quadrant, argentina_quadrant]]
 
         assert set(remaining_quadrants) == {"turquoise", "red"}
 

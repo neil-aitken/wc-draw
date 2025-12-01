@@ -226,9 +226,7 @@ def _check_uefa_minimum(
         # Count groups that will NOT have UEFA after this placement
         groups_needing_uefa = 0
         for g_name, g_teams in all_groups.items():
-            g_has_uefa = any(
-                t.confederation.startswith("UEFA") or "UEFA" in t.confederation for t in g_teams
-            )
+            g_has_uefa = any(t.confederation.startswith("UEFA") or "UEFA" in t.confederation for t in g_teams)
             if g_has_uefa:
                 continue  # This group is fine
 
@@ -240,11 +238,7 @@ def _check_uefa_minimum(
                 groups_needing_uefa += 1
 
         # Count UEFA teams remaining (excluding the one being placed)
-        remaining_uefa = sum(
-            1
-            for t in remaining_teams
-            if t != team and (t.confederation.startswith("UEFA") or "UEFA" in t.confederation)
-        )
+        remaining_uefa = sum(1 for t in remaining_teams if t != team and (t.confederation.startswith("UEFA") or "UEFA" in t.confederation))
 
         # Basic check: enough UEFA teams for groups that need them?
         if groups_needing_uefa > remaining_uefa:
@@ -335,9 +329,7 @@ def _lookahead_uefa_minimum(
 
     # Count UEFA remaining (excluding current team)
     is_uefa = team.confederation.startswith("UEFA")
-    uefa_remaining = sum(
-        1 for t in remaining_teams if t != team and t.confederation.startswith("UEFA")
-    )
+    uefa_remaining = sum(1 for t in remaining_teams if t != team and t.confederation.startswith("UEFA"))
 
     # If placing UEFA in group that already has UEFA
     if is_uefa and not target_needs_uefa:
@@ -418,10 +410,7 @@ def _lookahead_inter_path_2(
     simulated[group_name].append(team)
 
     # Count remaining CAF teams in pot 3 (these could fill groups that need CAF)
-    remaining_caf_pot3 = sum(
-        1 for t in remaining_teams
-        if t.pot == 3 and t.confederation == "CAF" and t != team
-    )
+    remaining_caf_pot3 = sum(1 for t in remaining_teams if t.pot == 3 and t.confederation == "CAF" and t != team)
 
     # Count groups that could still host IP2
     # A group is valid if it CAN end up with UEFA pot 1 + CAF/UEFA pot 2 + CAF/UEFA pot 3
@@ -508,9 +497,7 @@ def _lookahead_non_uefa_diversity(
         if pot1_confed and team.confederation == pot1_confed:
             # Check if there are enough diverse teams remaining
             # This is a soft constraint - allow if no alternative
-            diverse_remaining = sum(
-                1 for t in remaining_teams if t != team and t.confederation != pot1_confed
-            )
+            diverse_remaining = sum(1 for t in remaining_teams if t != team and t.confederation != pot1_confed)
             if diverse_remaining == 0:
                 return True  # No alternative, allow it
             # Check if other groups need this team more
@@ -534,11 +521,11 @@ def _lookahead_uefa_slots(
 ) -> bool:
     """
     L7: Reserve enough <2 UEFA groups for remaining UEFA teams in current pot.
-    
+
     Problem: MRV places most-constrained teams first. UEFA teams often have
     MORE options (can go to groups with 0 or 1 UEFA), so they get placed last.
     But by then, all <2 UEFA groups may be filled by non-UEFA teams.
-    
+
     Solution: When a non-UEFA team wants to go to a <2 UEFA group, check if
     there are enough <2 UEFA groups remaining for the UEFA teams in this pot.
     """
@@ -546,24 +533,21 @@ def _lookahead_uefa_slots(
     is_uefa = team.confederation == "UEFA"
     if is_uefa:
         return True  # UEFA teams can always go to <2 UEFA groups
-    
+
     # Simulate placement
     simulated = {g: list(teams) for g, teams in all_groups.items()}
     simulated[group_name].append(team)
-    
+
     # Get current pot
     current_pot = team.pot
     expected_size = current_pot  # After this pot completes, groups have this many
-    
+
     # Count UEFA teams remaining in this pot (excluding current team)
-    uefa_remaining_this_pot = sum(
-        1 for t in remaining_teams
-        if t.pot == current_pot and t.confederation == "UEFA" and t != team
-    )
-    
+    uefa_remaining_this_pot = sum(1 for t in remaining_teams if t.pot == current_pot and t.confederation == "UEFA" and t != team)
+
     if uefa_remaining_this_pot == 0:
         return True  # No UEFA teams left in this pot
-    
+
     # Count groups with <2 UEFA that still need a team from this pot
     # These are groups where we could still place a UEFA team
     available_for_uefa = 0
@@ -571,12 +555,12 @@ def _lookahead_uefa_slots(
         # Group still needs a team from this pot if size < expected_size
         if len(teams) >= expected_size:
             continue  # Already has its team from this pot
-        
+
         # Count UEFA in this group
         uefa_count = sum(1 for t in teams if t.confederation == "UEFA")
         if uefa_count < 2:
             available_for_uefa += 1
-    
+
     # Must have enough slots for remaining UEFA teams
     return available_for_uefa >= uefa_remaining_this_pot
 
@@ -618,10 +602,7 @@ def _lookahead_concacaf_slots(
     expected_size = current_pot  # After this pot completes, groups have this many
 
     # Count CONCACAF teams remaining in this pot (excluding current team)
-    concacaf_remaining = sum(
-        1 for t in remaining_teams
-        if t.pot == current_pot and t.confederation == "CONCACAF" and t != team
-    )
+    concacaf_remaining = sum(1 for t in remaining_teams if t.pot == current_pot and t.confederation == "CONCACAF" and t != team)
 
     if concacaf_remaining == 0:
         return True  # No CONCACAF teams left in this pot
@@ -653,11 +634,7 @@ def _lookahead_concacaf_slots(
         # of shared groups that both CONCACAF and UEFA need.
         # We must ensure UEFA won't crowd out CONCACAF from shared groups.
         if current_pot == 4:
-            uefa_remaining = sum(
-                1
-                for t in remaining_teams
-                if t.pot == current_pot and t.confederation == "UEFA" and t != team
-            )
+            uefa_remaining = sum(1 for t in remaining_teams if t.pot == current_pot and t.confederation == "UEFA" and t != team)
 
             # After placement, count shared vs UEFA-only groups
             concacaf_eligible = []
@@ -695,10 +672,7 @@ def _lookahead_concacaf_slots(
     # If a CONCACAF slot is ALSO needed by L7, we could strand the next CONCACAF.
     if is_concacaf and current_pot == 4:
         # Count UEFA teams remaining (excluding team being placed)
-        uefa_remaining = sum(
-            1 for t in remaining_teams
-            if t.pot == current_pot and t.confederation == "UEFA" and t != team
-        )
+        uefa_remaining = sum(1 for t in remaining_teams if t.pot == current_pot and t.confederation == "UEFA" and t != team)
 
         # Count groups that are: CONCACAF-free, UEFA, non-host, unfilled
         # These are valid for CONCACAF teams
@@ -728,9 +702,7 @@ def _lookahead_concacaf_slots(
 
         # Groups that are ONLY usable by UEFA (not by CONCACAF)
         # These are: <2 UEFA but either (host group OR has CONCACAF OR no UEFA)
-        uefa_only_groups = [
-            g for g in uefa_eligible_groups if g not in concacaf_eligible_groups
-        ]
+        uefa_only_groups = [g for g in uefa_eligible_groups if g not in concacaf_eligible_groups]
 
         # If UEFA can be fully satisfied by uefa_only groups, CONCACAF is fine
         if len(uefa_only_groups) >= uefa_remaining:
@@ -753,42 +725,39 @@ def _lookahead_caf_slots(
 ) -> bool:
     """
     L9: Reserve spots for CAF teams (max 1 per group).
-    
+
     Problem: CAF limit is 1 team per group. If non-CAF teams fill all CAF-free
     groups before CAF teams are placed, some CAF teams get stuck.
-    
+
     For pot 3: CAF teams need CAF-free groups, but also must preserve
               CAF-free+UEFA groups for pot 4 CAF teams.
               Key insight: pot 3 CAF teams should go to non-UEFA groups when
               possible, to leave UEFA groups CAF-free for pot 4.
     For pot 4: CAF teams need groups that are CAF-free AND have UEFA.
               Also need to account for CONCACAF needing some of the same groups.
-    
+
     Solution: When placing a non-CAF team, ensure enough CAF-viable groups
     remain for both current pot and future pots.
     """
     current_pot = team.pot
-    
+
     # Only apply to pots 3 and 4
     if current_pot < 3:
         return True
-    
+
     # Only matters for non-CAF teams
     if _is_caf_team(team):
         return True
-    
+
     # Simulate placement
     simulated = {g: list(teams) for g, teams in all_groups.items()}
     simulated[group_name].append(team)
-    
+
     expected_size = current_pot  # Groups should have this many teams after this pot
-    
+
     # Count CAF teams remaining in this pot
-    caf_remaining_this_pot = sum(
-        1 for t in remaining_teams
-        if t.pot == current_pot and _is_caf_team(t) and t != team
-    )
-    
+    caf_remaining_this_pot = sum(1 for t in remaining_teams if t.pot == current_pot and _is_caf_team(t) and t != team)
+
     # Count CAF-free groups for this pot
     available_for_caf = 0
     for g, teams in simulated.items():
@@ -803,27 +772,24 @@ def _lookahead_caf_slots(
             if not has_uefa:
                 continue
         available_for_caf += 1
-    
+
     if available_for_caf < caf_remaining_this_pot:
         return False
-    
+
     # For pot 4: Also check combined CAF + CONCACAF constraint
     # Both CAF and CONCACAF teams need CONCACAF-free + UEFA groups (non-host)
     # If the shared pool is too small, both constraints can't be satisfied
     if current_pot == 4:
         CONCACAF_HOST_GROUPS = {"A", "B", "D"}
-        
+
         # Count CONCACAF teams remaining
-        concacaf_remaining = sum(
-            1 for t in remaining_teams
-            if t.pot == 4 and t.confederation == "CONCACAF" and t != team
-        )
-        
+        concacaf_remaining = sum(1 for t in remaining_teams if t.pot == 4 and t.confederation == "CONCACAF" and t != team)
+
         if concacaf_remaining > 0:
             # CAF teams need: CAF-free + UEFA
             # CONCACAF teams need: CONCACAF-free + UEFA + non-host
             # The shared pool is: CAF-free + CONCACAF-free + UEFA + non-host
-            
+
             # Count groups only available to CONCACAF (have CAF already, but no CONCACAF)
             concacaf_only = 0
             for g, teams in simulated.items():
@@ -847,9 +813,7 @@ def _lookahead_caf_slots(
             # (subset of CONCACAF-eligible)
 
             # CONCACAF available = concacaf_only + max(0, available_for_caf - caf)
-            concacaf_available_after_caf = (
-                concacaf_only + max(0, available_for_caf - caf_remaining_this_pot)
-            )
+            concacaf_available_after_caf = concacaf_only + max(0, available_for_caf - caf_remaining_this_pot)
 
             if concacaf_available_after_caf < concacaf_remaining:
                 return False
@@ -896,14 +860,10 @@ def _lookahead_pot4_caf(
     is_uefa_team = "UEFA" in team.confederation
 
     # Count current state (before this placement)
-    non_uefa_groups_before = sum(
-        1 for g in all_groups if not any("UEFA" in t.confederation for t in all_groups[g])
-    )
+    non_uefa_groups_before = sum(1 for g in all_groups if not any("UEFA" in t.confederation for t in all_groups[g]))
 
     # Count pot 2 UEFA teams remaining (including current if applicable)
-    pot2_uefa_remaining = len(
-        [t for t in remaining_teams if t.pot == 2 and "UEFA" in t.confederation and t != team]
-    )
+    pot2_uefa_remaining = len([t for t in remaining_teams if t.pot == 2 and "UEFA" in t.confederation and t != team])
     if is_uefa_team:
         pot2_uefa_total = pot2_uefa_remaining + 1  # Include current team
     else:
@@ -965,9 +925,7 @@ def _lookahead_pot4_caf(
             non_uefa_groups += 1
 
     # Count remaining teams
-    pot2_caf_remaining = len(
-        [t for t in remaining_teams if t.pot == 2 and _is_caf_team(t) and t != team]
-    )
+    pot2_caf_remaining = len([t for t in remaining_teams if t.pot == 2 and _is_caf_team(t) and t != team])
     pot3_caf_count = 5
     pot3_uefa_count = 2
 
@@ -1119,9 +1077,7 @@ def draw_pot1_with_separation(
         team_options = []
         for team in remaining:
             if team.name in top4_names:
-                available = _get_available_groups_for_top4(
-                    team, groups, top4_placements, top4_teams
-                )
+                available = _get_available_groups_for_top4(team, groups, top4_placements, top4_teams)
             else:
                 quadrants_with_top4 = set(top4_placements.values())
                 available = _get_available_groups_for_non_top4(groups, quadrants_with_top4)
@@ -1213,9 +1169,7 @@ def draw_pot(
                 eligible = [
                     g
                     for g, grp in groups.items()
-                    if len(grp) == expected_size
-                    and len(grp) < 4
-                    and is_eligible(team, grp, g, groups, all_remaining, lookahead)
+                    if len(grp) == expected_size and len(grp) < 4 and is_eligible(team, grp, g, groups, all_remaining, lookahead)
                 ]
             team_options.append((team, eligible))
 
@@ -1239,20 +1193,14 @@ def draw_pot(
         if pot[0].pot == 3:
             if _is_caf_team(team):
                 # CAF teams prefer non-UEFA groups to preserve UEFA CAF-free for pot 4
-                non_uefa_groups = [
-                    g for g in eligible
-                    if not any("UEFA" in t.confederation for t in groups[g])
-                ]
+                non_uefa_groups = [g for g in eligible if not any("UEFA" in t.confederation for t in groups[g])]
                 if non_uefa_groups:
                     target = rng.choice(non_uefa_groups)
                 else:
                     target = rng.choice(eligible)
             else:
                 # Non-CAF teams prefer UEFA groups (leaving non-UEFA for CAF teams)
-                uefa_groups = [
-                    g for g in eligible
-                    if any("UEFA" in t.confederation for t in groups[g])
-                ]
+                uefa_groups = [g for g in eligible if any("UEFA" in t.confederation for t in groups[g])]
                 if uefa_groups:
                     target = rng.choice(uefa_groups)
                 else:
@@ -1380,9 +1328,7 @@ def validate_draw(groups: Dict[str, List[Team]]) -> List[str]:
                 violations.append(f"Group {group_name} has {count} {conf} teams (max {limit})")
 
         # Check UEFA minimum
-        has_uefa = any(
-            t.confederation.startswith("UEFA") or "UEFA" in t.confederation for t in teams
-        )
+        has_uefa = any(t.confederation.startswith("UEFA") or "UEFA" in t.confederation for t in teams)
         if not has_uefa:
             violations.append(f"Group {group_name} has no UEFA team")
 
@@ -1404,10 +1350,7 @@ def validate_draw(groups: Dict[str, List[Team]]) -> List[str]:
         for team, group in top4:
             q = _get_quadrant_for_group(group)
             if q in quadrants_used:
-                violations.append(
-                    f"Top 4 separation: {team.name} and {quadrants_used[q]} "
-                    f"are both in quadrant {q}"
-                )
+                violations.append(f"Top 4 separation: {team.name} and {quadrants_used[q]} are both in quadrant {q}")
             quadrants_used[q] = team.name
 
         # Check: Top 2 (ranks 1-2) must be in opposite halves
@@ -1418,10 +1361,7 @@ def validate_draw(groups: Dict[str, List[Team]]) -> List[str]:
             h1 = _get_half_for_quadrant(q1)
             h2 = _get_half_for_quadrant(q2)
             if h1 == h2:
-                violations.append(
-                    f"Top 2 separation: {top2[0][0].name} and {top2[1][0].name} "
-                    f"are both in {h1}"
-                )
+                violations.append(f"Top 2 separation: {top2[0][0].name} and {top2[1][0].name} are both in {h1}")
 
         # Check: Seeds 3-4 (ranks 3-4) must be in opposite halves
         seeds34 = top4[2:4]
@@ -1431,10 +1371,7 @@ def validate_draw(groups: Dict[str, List[Team]]) -> List[str]:
             h3 = _get_half_for_quadrant(q3)
             h4 = _get_half_for_quadrant(q4)
             if h3 == h4:
-                violations.append(
-                    f"Seeds 3-4 separation: {seeds34[0][0].name} and {seeds34[1][0].name} "
-                    f"are both in {h3}"
-                )
+                violations.append(f"Seeds 3-4 separation: {seeds34[0][0].name} and {seeds34[1][0].name} are both in {h3}")
 
     return violations
 

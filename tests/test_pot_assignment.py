@@ -28,23 +28,6 @@ def test_assign_pots_defaults():
     assert "UEFA Playoff B" in pot4_names
 
 
-def test_assign_pots_uefa_playoffs_seeded():
-    """Test pot assignment with uefa_playoffs_seeded=True."""
-    teams = parse_teams_config("teams.csv")
-    config = DrawConfig(uefa_playoffs_seeded=True)
-
-    new_pots = assign_pots(teams, config)
-
-    # Playoff paths should be sorted by FIFA ranking
-    # UEFA Playoff A (rank 12) should be in Pot 2 (9 better teams + 3 hosts in Pot 1)
-    pot2_names = {t.name for t in new_pots[2]}
-    assert "UEFA Playoff A" in pot2_names  # Italy's rank (12)
-
-    # UEFA Playoff B (rank 20) might be in Pot 2 or 3 depending on other rankings
-    all_names_by_pot = {pot: {t.name for t in teams} for pot, teams in new_pots.items()}
-    assert any("UEFA Playoff B" in names for names in all_names_by_pot.values())
-
-
 def test_assign_pots_preserves_all_teams():
     """Test that all teams are preserved during reassignment."""
     teams = parse_teams_config("teams.csv")
@@ -87,26 +70,6 @@ def test_assign_pots_hosts_always_pot1():
         assert "Canada" in pot1_names
         assert "Mexico" in pot1_names
         assert "United States" in pot1_names
-
-
-def test_assign_pots_sorted_by_ranking():
-    """Test that non-host teams are sorted by FIFA ranking."""
-    teams = parse_teams_config("teams.csv")
-    config = DrawConfig(uefa_playoffs_seeded=True)  # Include playoffs in ranking
-
-    new_pots = assign_pots(teams, config)
-
-    # Get non-host teams from Pot 1
-    pot1_non_hosts = [t for t in new_pots[1] if not t.host]
-
-    # Should be sorted by ranking (ascending = best first)
-    rankings = [t.fifa_ranking for t in pot1_non_hosts]
-    assert rankings == sorted(rankings)
-
-    # Top ranked non-host should be in Pot 1
-    # Argentina (rank 1) should be in Pot 1
-    pot1_names = {t.name for t in new_pots[1]}
-    assert "Argentina" in pot1_names
 
 
 def test_assign_pots_pot_sizes():

@@ -172,10 +172,7 @@ def check_inter_path_2_opponents():
         print("Inter Path 2 never grouped with African teams in this dataset.")
 
     print("\n--- European Teams ---")
-    print(
-        f"Draws where Inter Path 2 has exactly 2 European opponents: "
-        f"{len(draws_with_two_europeans):,}"
-    )
+    print(f"Draws where Inter Path 2 has exactly 2 European opponents: {len(draws_with_two_europeans):,}")
 
     if draws_with_two_europeans:
         print(f"Percentage: {len(draws_with_two_europeans) / total_draws * 100:.2f}%")
@@ -200,10 +197,7 @@ def check_inter_path_2_opponents():
             print(f"  European team count: {draw['european_count']}")
 
     print("\n--- Non-European Pot 1 Teams ---")
-    print(
-        f"Draws where Inter Path 2 has a non-European Pot 1 opponent: "
-        f"{len(draws_with_non_euro_pot1):,}"
-    )
+    print(f"Draws where Inter Path 2 has a non-European Pot 1 opponent: {len(draws_with_non_euro_pot1):,}")
 
     if draws_with_non_euro_pot1:
         print(f"Percentage: {len(draws_with_non_euro_pot1) / total_draws * 100:.2f}%")

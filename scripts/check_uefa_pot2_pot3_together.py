@@ -26,12 +26,8 @@ def analyze_uefa_pot2_pot3():
     teams = load_teams()
 
     # Identify UEFA teams by pot
-    uefa_pot2 = [
-        team for team, info in teams.items() if info["confederation"] == "UEFA" and info["pot"] == 2
-    ]
-    uefa_pot3 = [
-        team for team, info in teams.items() if info["confederation"] == "UEFA" and info["pot"] == 3
-    ]
+    uefa_pot2 = [team for team, info in teams.items() if info["confederation"] == "UEFA" and info["pot"] == 2]
+    uefa_pot3 = [team for team, info in teams.items() if info["confederation"] == "UEFA" and info["pot"] == 3]
 
     print("=" * 70)
     print("UEFA Pot 2 and Pot 3 Co-occurrence Analysis")

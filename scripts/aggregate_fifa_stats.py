@@ -45,14 +45,8 @@ def aggregate_fifa_draws(jsonl_path):
     # Convert counts to percentages
     teams_stats = {}
     for team in sorted(group_counts.keys()):
-        group_pct = {
-            grp: (count / successes * 100.0) if successes > 0 else 0.0
-            for grp, count in sorted(group_counts[team].items())
-        }
-        pair_pct = {
-            opp: (count / successes * 100.0) if successes > 0 else 0.0
-            for opp, count in sorted(pair_counts[team].items())
-        }
+        group_pct = {grp: (count / successes * 100.0) if successes > 0 else 0.0 for grp, count in sorted(group_counts[team].items())}
+        pair_pct = {opp: (count / successes * 100.0) if successes > 0 else 0.0 for opp, count in sorted(pair_counts[team].items())}
         teams_stats[team] = {"group_pct": group_pct, "pair_pct": pair_pct}
 
     return {

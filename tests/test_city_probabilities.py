@@ -216,10 +216,7 @@ class TestTeamCityProbabilities:
         # So Mexico City should have at least 9.08% from Group A alone
         group_a_pct = scotland_groups["A"]
         mexico_city_prob = scotland_cities.get("mexico-city", 0)
-        assert mexico_city_prob >= group_a_pct, (
-            f"Mexico City prob ({mexico_city_prob}) should be >= "
-            f"Group A contribution ({group_a_pct})"
-        )
+        assert mexico_city_prob >= group_a_pct, f"Mexico City prob ({mexico_city_prob}) should be >= Group A contribution ({group_a_pct})"
 
     def test_probabilities_sum_correctly(self):
         """Verify probability calculation is weighted correctly."""
@@ -242,9 +239,7 @@ class TestTeamCityProbabilities:
 
         for city, prob in city_probs.items():
             expected = group_a_pot3.get(city, 0) * 100.0  # Convert to percentage
-            assert abs(prob - expected) < 0.01, (
-                f"City {city}: expected {expected:.2f}, got {prob:.2f}"
-            )
+            assert abs(prob - expected) < 0.01, f"City {city}: expected {expected:.2f}, got {prob:.2f}"
 
 
 class TestRealWorldData:

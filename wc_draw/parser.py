@@ -103,12 +103,8 @@ def parse_teams_config(filepath: str) -> dict[int, List[Team]]:
                 host=host.strip().lower() == "true",
                 fixed_group=fixed_group.strip() if fixed_group and fixed_group.strip() else None,
                 flag=flag.strip() if flag and flag.strip() else None,
-                fifa_ranking=(
-                    int(fifa_ranking.strip()) if fifa_ranking and fifa_ranking.strip() else 0
-                ),
-                uefa_group_winner=(
-                    uefa_group_winner.strip().lower() == "true" if uefa_group_winner else False
-                ),
+                fifa_ranking=(int(fifa_ranking.strip()) if fifa_ranking and fifa_ranking.strip() else 0),
+                uefa_group_winner=(uefa_group_winner.strip().lower() == "true" if uefa_group_winner else False),
             )
             # If the CSV stores explicit unicode escape sequences (e.g. "\U0001F3F4..."),
             # replace those escapes only (leave literal emoji alone) to avoid

@@ -72,14 +72,8 @@ def aggregate_jsonl(path: Path) -> Dict[str, Any]:
     # Convert counts to percentages
     teams_stats = {}
     for team in group_counts:
-        group_pct = {
-            grp: (count / successes * 100.0) if successes > 0 else 0.0
-            for grp, count in group_counts[team].items()
-        }
-        pair_pct = {
-            opp: (count / successes * 100.0) if successes > 0 else 0.0
-            for opp, count in pair_counts[team].items()
-        }
+        group_pct = {grp: (count / successes * 100.0) if successes > 0 else 0.0 for grp, count in group_counts[team].items()}
+        pair_pct = {opp: (count / successes * 100.0) if successes > 0 else 0.0 for opp, count in pair_counts[team].items()}
         teams_stats[team] = {
             "group_pct": group_pct,
             "pair_pct": pair_pct,

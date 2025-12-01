@@ -90,9 +90,7 @@ def format_city_probs_for_output(all_team_city_probs):
     # Round to 2 decimal places for cleaner output
     formatted = {}
     for team, city_probs in all_team_city_probs.items():
-        formatted[team] = {
-            city: round(prob, 2) for city, prob in sorted(city_probs.items(), key=lambda x: -x[1])
-        }
+        formatted[team] = {city: round(prob, 2) for city, prob in sorted(city_probs.items(), key=lambda x: -x[1])}
     return formatted
 
 
@@ -189,9 +187,7 @@ def main():
 
     # Calculate city probabilities for all teams
     print("\nCalculating city probabilities for all teams...")
-    all_team_city_probs = calculate_all_teams_city_probabilities(
-        fifa_stats, city_prob_map, POT_ASSIGNMENTS
-    )
+    all_team_city_probs = calculate_all_teams_city_probabilities(fifa_stats, city_prob_map, POT_ASSIGNMENTS)
     print(f"  Calculated for {len(all_team_city_probs)} teams")
 
     # Save outputs

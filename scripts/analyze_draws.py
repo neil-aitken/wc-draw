@@ -132,9 +132,7 @@ def main():
     parser = argparse.ArgumentParser(description="Analyze draws without lookahead")
     parser.add_argument("-n", "--num-seeds", type=int, default=1000, help="Number of seeds to test")
     parser.add_argument("-t", "--threads", type=int, default=8, help="Number of parallel threads")
-    parser.add_argument(
-        "-o", "--output", type=str, default="draw_analysis.json", help="Output file"
-    )
+    parser.add_argument("-o", "--output", type=str, default="draw_analysis.json", help="Output file")
     args = parser.parse_args()
 
     # Load teams
