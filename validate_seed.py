@@ -38,7 +38,7 @@ def find_seed_in_jsonl(seed: int, jsonl_path: str) -> Dict:
             data = json.loads(line)
             if data.get("seed") == seed:
                 return data
-    return None
+    return {}
 
 
 def validate_draw(groups: Dict[str, List[str]], confeds: Dict[str, str]) -> Tuple[bool, List[str]]:

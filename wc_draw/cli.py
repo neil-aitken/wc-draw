@@ -10,7 +10,7 @@ from .draw_v2 import run_draw, LookaheadConfig
 
 
 def format_pots(pots: dict, slots_map: dict | None = None) -> str:
-    lines = []
+    lines: list[str] = []
     for pot in sorted(pots.keys()):
         teams = pots[pot]
         flags = []
@@ -33,7 +33,7 @@ def format_pots(pots: dict, slots_map: dict | None = None) -> str:
 
 
 def format_slots(slots: Iterable) -> str:
-    lines = []
+    lines: list[str] = []
     for s in slots:
         parts = [f"{s.name} (pot {s.pot})"]
         if s.allowed_confederations:
@@ -142,7 +142,7 @@ def main(argv=None):
             slot = slots_map.get(t.name)
             if slot and getattr(slot, "flags", None):
                 parts = [p.strip() for p in slot.flags.split("/")]
-                out_parts = []
+                out_parts: list[str] = []
                 for part in parts:
                     out_parts.append(part)
                 return "/".join(out_parts)

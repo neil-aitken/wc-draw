@@ -15,6 +15,20 @@ line-length = 140
 select = ["E", "F", "W"]
 ignore = []
 
+[tool.pyrefly]
+project-includes = [
+    "wc_draw/**/*.py",
+    "scripts/test_draw_v2.py",
+    "tests/**/*.py",
+    "validate_seed.py",
+]
+project-excludes = [
+    "**/__pycache__/**",
+    "**/.venv/**",
+    "**/build/**",
+    "**/dist/**",
+]
+
 [tool.ruff.lint.per-file-ignores]
 "scripts/*.py" = ["E402", "E501"]  # Allow import-after-sys.path and long lines
 "notebooks/*.ipynb" = ["E402", "E501"]  # Notebooks have different import patterns

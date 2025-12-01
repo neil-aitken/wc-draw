@@ -10,7 +10,7 @@ lint-fix:
 format: 
 	uv run ruff format
 
-all: test lint format
+all: test lint format pyrefly
 
 cli:
 	uv run python -m wc_draw.cli $(ARGS)
@@ -21,6 +21,9 @@ draw:
 
 test-all:
 	uv run pytest
+
+pyrefly:
+	uv run pyrefly check wc_draw/ scripts/test_draw_v2.py tests/ validate_seed.py
 
 .PHONY: help
 help:

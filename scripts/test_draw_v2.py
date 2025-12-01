@@ -47,7 +47,7 @@ def run_single_draw(seed: int, pots: dict, lookahead_config: LookaheadConfig) ->
         return DrawResult(seed=seed, success=False, time_ms=elapsed, error=str(e))
 
 
-def run_test(num_seeds: int = 100, lookahead_config: LookaheadConfig = None, num_threads: int = 8):
+def run_test(num_seeds: int = 100, lookahead_config: LookaheadConfig | None = None, num_threads: int = 8):
     """Run draw simulations in parallel and report statistics."""
 
     # Load teams
@@ -146,8 +146,9 @@ def run_single_seed_verbose(seed: int, lookahead_config: LookaheadConfig):
         print("-" * 60)
 
         # Print the draw result
-        for group_name in sorted(result.keys()):
-            teams = result[group_name]
+        groups, _ = result
+        for group_name in sorted(groups.keys()):
+            teams = groups[group_name]
             print(f"Group {group_name}:")
             for t in teams:
                 print(f"  Pot {t.pot}: {t.name} ({t.confederation})")
