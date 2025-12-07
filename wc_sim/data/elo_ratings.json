@@ -1,0 +1,402 @@
+{
+  "source": "eloratings.net",
+  "fetched": "2024-12",
+  "teams": {
+    "United States": {
+      "elo": 1759,
+      "confederation": "CONCACAF",
+      "fifa_rank": 16,
+      "code": "US"
+    },
+    "Canada": {
+      "elo": 1784,
+      "confederation": "CONCACAF",
+      "fifa_rank": 48,
+      "code": "CA"
+    },
+    "Mexico": {
+      "elo": 1769,
+      "confederation": "CONCACAF",
+      "fifa_rank": 14,
+      "code": "MX"
+    },
+    "Spain": {
+      "elo": 2177,
+      "confederation": "UEFA",
+      "fifa_rank": 1,
+      "code": "ES"
+    },
+    "England": {
+      "elo": 2006,
+      "confederation": "UEFA",
+      "fifa_rank": 4,
+      "code": "EN"
+    },
+    "France": {
+      "elo": 2055,
+      "confederation": "UEFA",
+      "fifa_rank": 3,
+      "code": "FR"
+    },
+    "Germany": {
+      "elo": 1971,
+      "confederation": "UEFA",
+      "fifa_rank": 10,
+      "code": "DE"
+    },
+    "Netherlands": {
+      "elo": 1938,
+      "confederation": "UEFA",
+      "fifa_rank": 7,
+      "code": "NL"
+    },
+    "Portugal": {
+      "elo": 1993,
+      "confederation": "UEFA",
+      "fifa_rank": 6,
+      "code": "PT"
+    },
+    "Belgium": {
+      "elo": 1850,
+      "confederation": "UEFA",
+      "fifa_rank": 5,
+      "code": "BE"
+    },
+    "Croatia": {
+      "elo": 1886,
+      "confederation": "UEFA",
+      "fifa_rank": 12,
+      "code": "HR"
+    },
+    "Austria": {
+      "elo": 1871,
+      "confederation": "UEFA",
+      "fifa_rank": 22,
+      "code": "AT"
+    },
+    "Switzerland": {
+      "elo": 1814,
+      "confederation": "UEFA",
+      "fifa_rank": 15,
+      "code": "CH"
+    },
+    "Norway": {
+      "elo": 1806,
+      "confederation": "UEFA",
+      "fifa_rank": 50,
+      "code": "NO"
+    },
+    "Serbia": {
+      "elo": 1810,
+      "confederation": "UEFA",
+      "fifa_rank": 33,
+      "code": "RS"
+    },
+    "Scotland": {
+      "elo": 1759,
+      "confederation": "UEFA",
+      "fifa_rank": 51,
+      "code": "SQ"
+    },
+    "Argentina": {
+      "elo": 2108,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 2,
+      "code": "AR"
+    },
+    "Brazil": {
+      "elo": 1996,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 9,
+      "code": "BR"
+    },
+    "Colombia": {
+      "elo": 1977,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 11,
+      "code": "CO"
+    },
+    "Uruguay": {
+      "elo": 1948,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 13,
+      "code": "UY"
+    },
+    "Ecuador": {
+      "elo": 1910,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 31,
+      "code": "EC"
+    },
+    "Paraguay": {
+      "elo": 1775,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 55,
+      "code": "PY"
+    },
+    "Panama": {
+      "elo": 1726,
+      "confederation": "CONCACAF",
+      "fifa_rank": 37,
+      "code": "PA"
+    },
+    "Haiti": {
+      "elo": 1538,
+      "confederation": "CONCACAF",
+      "fifa_rank": 92,
+      "code": "HT"
+    },
+    "Cura\u00e7ao": {
+      "elo": 1336,
+      "confederation": "CONCACAF",
+      "fifa_rank": 82,
+      "code": "CW"
+    },
+    "Morocco": {
+      "elo": 1802,
+      "confederation": "CAF",
+      "fifa_rank": 18,
+      "code": "MA"
+    },
+    "Senegal": {
+      "elo": 1770,
+      "confederation": "CAF",
+      "fifa_rank": 21,
+      "code": "SN"
+    },
+    "Egypt": {
+      "elo": 1657,
+      "confederation": "CAF",
+      "fifa_rank": 36,
+      "code": "EG"
+    },
+    "Nigeria": {
+      "elo": 1550,
+      "confederation": "CAF",
+      "fifa_rank": 28,
+      "code": "NG"
+    },
+    "Ivory Coast": {
+      "elo": 1579,
+      "confederation": "CAF",
+      "fifa_rank": 38,
+      "code": "CI"
+    },
+    "South Africa": {
+      "elo": 1576,
+      "confederation": "CAF",
+      "fifa_rank": 60,
+      "code": "ZA"
+    },
+    "Cameroon": {
+      "elo": 1594,
+      "confederation": "CAF",
+      "fifa_rank": 44,
+      "code": "CM"
+    },
+    "Algeria": {
+      "elo": 1685,
+      "confederation": "CAF",
+      "fifa_rank": 30,
+      "code": "DZ"
+    },
+    "Cape Verde": {
+      "elo": 1471,
+      "confederation": "CAF",
+      "fifa_rank": 62,
+      "code": "CV"
+    },
+    "Japan": {
+      "elo": 1889,
+      "confederation": "AFC",
+      "fifa_rank": 17,
+      "code": "JP"
+    },
+    "Iran": {
+      "elo": 1837,
+      "confederation": "AFC",
+      "fifa_rank": 20,
+      "code": "IR"
+    },
+    "South Korea": {
+      "elo": 1774,
+      "confederation": "AFC",
+      "fifa_rank": 23,
+      "code": "KR"
+    },
+    "Saudi Arabia": {
+      "elo": 1537,
+      "confederation": "AFC",
+      "fifa_rank": 57,
+      "code": "SA"
+    },
+    "Australia": {
+      "elo": 1719,
+      "confederation": "AFC",
+      "fifa_rank": 26,
+      "code": "AU"
+    },
+    "Qatar": {
+      "elo": 1526,
+      "confederation": "AFC",
+      "fifa_rank": 35,
+      "code": "QA"
+    },
+    "Uzbekistan": {
+      "elo": 1685,
+      "confederation": "AFC",
+      "fifa_rank": 63,
+      "code": "UZ"
+    },
+    "New Zealand": {
+      "elo": 1584,
+      "confederation": "OFC",
+      "fifa_rank": 99,
+      "code": "NZ"
+    },
+    "Jordan": {
+      "elo": 1618,
+      "confederation": "AFC",
+      "fifa_rank": 68,
+      "code": "JO"
+    },
+    "Ghana": {
+      "elo": 1429,
+      "confederation": "CAF",
+      "fifa_rank": 43,
+      "code": "GH"
+    },
+    "Italy": {
+      "elo": 1930,
+      "confederation": "UEFA",
+      "fifa_rank": 8,
+      "code": "IT"
+    },
+    "Wales": {
+      "elo": 1732,
+      "confederation": "UEFA",
+      "fifa_rank": 27,
+      "code": "WA"
+    },
+    "Bosnia and Herzegovina": {
+      "elo": 1484,
+      "confederation": "UEFA",
+      "fifa_rank": 77,
+      "code": "BA"
+    },
+    "Northern Ireland": {
+      "elo": 1363,
+      "confederation": "UEFA",
+      "fifa_rank": 78,
+      "code": "NI"
+    },
+    "Ukraine": {
+      "elo": 1802,
+      "confederation": "UEFA",
+      "fifa_rank": 24,
+      "code": "UA"
+    },
+    "Poland": {
+      "elo": 1699,
+      "confederation": "UEFA",
+      "fifa_rank": 25,
+      "code": "PL"
+    },
+    "Albania": {
+      "elo": 1635,
+      "confederation": "UEFA",
+      "fifa_rank": 64,
+      "code": "AL"
+    },
+    "Sweden": {
+      "elo": 1744,
+      "confederation": "UEFA",
+      "fifa_rank": 45,
+      "code": "SE"
+    },
+    "Turkey": {
+      "elo": 1774,
+      "confederation": "UEFA",
+      "fifa_rank": 32,
+      "code": "TR"
+    },
+    "Slovakia": {
+      "elo": 1702,
+      "confederation": "UEFA",
+      "fifa_rank": 42,
+      "code": "SK"
+    },
+    "Kosovo": {
+      "elo": 1554,
+      "confederation": "UEFA",
+      "fifa_rank": 107,
+      "code": "KO"
+    },
+    "Romania": {
+      "elo": 1719,
+      "confederation": "UEFA",
+      "fifa_rank": 39,
+      "code": "RO"
+    },
+    "Denmark": {
+      "elo": 1856,
+      "confederation": "UEFA",
+      "fifa_rank": 19,
+      "code": "DK"
+    },
+    "Czech Republic": {
+      "elo": 1754,
+      "confederation": "UEFA",
+      "fifa_rank": 34,
+      "code": "CZ"
+    },
+    "Ireland": {
+      "elo": 1608,
+      "confederation": "UEFA",
+      "fifa_rank": 53,
+      "code": "IE"
+    },
+    "North Macedonia": {
+      "elo": 1610,
+      "confederation": "UEFA",
+      "fifa_rank": 72,
+      "code": "NM"
+    },
+    "DR Congo": {
+      "elo": 1541,
+      "confederation": "CAF",
+      "fifa_rank": 56,
+      "code": "CD"
+    },
+    "Jamaica": {
+      "elo": 1575,
+      "confederation": "CONCACAF",
+      "fifa_rank": 65,
+      "code": "JM"
+    },
+    "New Caledonia": {
+      "elo": 1262,
+      "confederation": "OFC",
+      "fifa_rank": 159,
+      "code": "NC"
+    },
+    "Iraq": {
+      "elo": 1584,
+      "confederation": "AFC",
+      "fifa_rank": 52,
+      "code": "IQ"
+    },
+    "Bolivia": {
+      "elo": 1657,
+      "confederation": "CONMEBOL",
+      "fifa_rank": 80,
+      "code": "BO"
+    },
+    "Suriname": {
+      "elo": 1356,
+      "confederation": "CONCACAF",
+      "fifa_rank": 135,
+      "code": "SR"
+    }
+  }
+}

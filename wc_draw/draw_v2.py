@@ -71,7 +71,10 @@ def _get_half_for_quadrant(quadrant: str) -> str:
 
 @dataclass
 class LookaheadConfig:
-    """Feature flags for lookahead constraints."""
+    """Feature flags for lookahead constraints and draw style."""
+
+    # Draw style: FIFA-style (random draw, lowest eligible group) vs MRV heuristic
+    fifa_style: bool = False
 
     # L1: Block placements that would leave a group without UEFA
     l1_uefa_minimum: bool = False
@@ -98,6 +101,21 @@ class LookaheadConfig:
 
     # L9: Reserve spots for CAF teams (max 1 per group, so need CAF-free groups)
     l9_caf_slots: bool = False
+
+    # L10: Reserve spots for constrained confederations (CONMEBOL, AFC) in each pot
+    l10_confederation_slots: bool = False
+
+    # L11: Combined IP2/CONMEBOL preservation in pot 2
+    l11_ip2_conmebol_combined: bool = False
+
+    # L12: Pot 3 team viability check
+    l12_pot3_viability: bool = False
+
+    # L13: Pot 4 Jordan/IP2 protection  
+    l13_pot4_jordan_ip2: bool = False
+
+    # L14: Pot 3 UEFA distribution for pot 4 CAF viability
+    l14_pot3_uefa_caf_distribution: bool = False
 
 
 # =============================================================================
